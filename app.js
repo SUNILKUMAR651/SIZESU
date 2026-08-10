@@ -740,8 +740,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = qrTextInput ? qrTextInput.value.trim() || 'https://sizesu.app' : 'https://sizesu.app';
         const fgColor = qrFgColorInput ? qrFgColorInput.value : '#000000';
         const bgColor = qrBgColorInput ? qrBgColorInput.value : '#ffffff';
-
-        const qrCanvas = QREngine.generateQRCodeCanvas(text, { fgColor, bgColor, size: 360 });
+        const qrCanvas = document.createElement('canvas');
+        new QRious({
+          element: qrCanvas,
+          value: text,
+          background: bgColor,
+          foreground: fgColor,
+          size: 512,
+          level: 'H',
+          padding: 10
+        });
 
         qrCanvas.toBlob(blob => {
           if (previewImg) previewImg.src = URL.createObjectURL(blob);
@@ -756,7 +764,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Universal Download Single Button
     const performDownloadCurrent = async () => {
-      if (!activeImageObj && activeTab !== 'pdf' && activeTab !== 'qr') {
+      // If user clicks the main download button while in the QR tab, just generate and download the QR.
+      if (activeTab === 'qr') {
+        if (generateQrBtn) generateQrBtn.click();
+        return;
+      }
+      
+      if (activeTab === 'pdf') {
+        showToast('Please use the PDF action buttons in the panel to download PDF files.', 'info');
+        return;
+      }
+
+      if (!activeImageObj) {
         showToast('Please upload an image first!', 'error');
         return;
       }
@@ -1081,5 +1100,260 @@ document.addEventListener('DOMContentLoaded', () => {
     seoRouter.init();
   } catch (e) {
     console.warn('SEORouter init notice:', e);
+  }
+
+  // --- Pi7 Style UI Logic ---
+  const pi7Overlay = document.getElementById('pi7Overlay');
+  const pi7Filename = document.getElementById('pi7Filename');
+  const pi7Size = document.getElementById('pi7Size');
+  const pi7Width = document.getElementById('pi7Width');
+  const pi7Height = document.getElementById('pi7Height');
+  const pi7ResizeBtn = document.getElementById('pi7ResizeBtn');
+  const pi7CropBtn = document.getElementById('pi7CropBtn');
+  
+  if (pi7ResizeBtn) {
+    pi7ResizeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const resizeTab = document.querySelector('.tool-tab[data-tool="resize"]');
+      if (resizeTab) resizeTab.click();
+    });
+  }
+      debouncedRender();
+    } catch (err) {
+      showToast('Failed to load selected image', 'error');
+    }
+  }
+
+  function handleToolSwitch() {
+    if ((activeTab === 'qr' || activeTab === 'pdf') && workspaceArea) {
+      workspaceArea.style.display = 'grid';
+    }
+
+    if (cropEngine) {
+      cropEngine.destroy();
+      cropEngine = null;
+    }
+
+    if (activeTab === 'crop' && previewCanvasContainer && previewImg && activeImageObj) {
+      cropEngine = new CropEngine(previewCanvasContainer, previewImg, { aspectRatio: aspectRatioValue });
+    } else {
+      triggerRealtimeRender();
+    }
+  }
+
+  function onDimensionChange(changedAxis) {
+    let w = parseInt(inputWidth.value, 10);
+    let h = parseInt(inputHeight.value, 10);
+
+    if (isNaN(w) || w <= 0 || isNaN(h) || h <= 0) return;
+
+    if (isAspectLocked && aspectRatioValue) {
+      if (changedAxis === 'width' && w > 0) {
+        h = Math.round(w / aspectRatioValue);
+        if (inputHeight) inputHeight.value = h;
+      } else if (changedAxis === 'height' && h > 0) {
+        w = Math.round(h * aspectRatioValue);
+        if (inputWidth) inputWidth.value = w;
+      }
+    }
+
+    currentOptions.width = w;
+    currentOptions.height = h;
+    debouncedRender();
+  }
+
+  function updateDimensionFromUnit() {
+    if (!activeImageObj || !unitSelect) return;
+    const unit = unitSelect.value;
+    const dpi = parseInt(dpiSelect ? dpiSelect.value : 300, 10) || 300;
+
+    if (unit === 'cm') {
+      if (inputWidth) inputWidth.value = pxToCm(currentOptions.width, dpi);
+      if (inputHeight) inputHeight.value = pxToCm(currentOptions.height, dpi);
+    } else if (unit === 'mm') {
+      if (inputWidth) inputWidth.value = pxToMm(currentOptions.width, dpi);
+      if (inputHeight) inputHeight.value = pxToMm(currentOptions.height, dpi);
+    } else if (unit === 'inch') {
+      if (inputWidth) inputWidth.value = pxToInch(currentOptions.width, dpi);
+      if (inputHeight) inputHeight.value = pxToInch(currentOptions.height, dpi);
+    } else {
+      if (inputWidth) inputWidth.value = currentOptions.width;
+      if (inputHeight) inputHeight.value = currentOptions.height;
+    }
+  }
+
+  function debouncedRender() {
+    if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+    renderDebounceTimer = setTimeout(() => {
+      triggerRealtimeRender();
+    }, 50);
+  }
+
+  async function triggerRealtimeRender() {
+    if (!activeImageObj || !currentActiveFile) return;
+
+    let finalCanvas;
+    if (activeTab === 'crop' && cropEngine) {
+      finalCanvas = cropEngine.getCroppedCanvas(activeImageObj.naturalWidth, activeImageObj.naturalHeight);
+    } else {
+      finalCanvas = ImageProcessor.processImage(activeImageObj, currentOptions);
+    }
+
+    let resultBlob;
+    if (currentOptions.targetKb > 0) {
+      resultBlob = await ImageProcessor.compressToTargetKb(activeImageObj, currentOptions.targetKb, currentOptions.format, currentOptions);
+    } else {
+      resultBlob = await ImageProcessor.canvasToBlob(finalCanvas, currentOptions.format, currentOptions.quality);
+    }
+
+    currentActiveFile.processedBlob = resultBlob;
+    currentActiveFile.processedSize = resultBlob.size;
+
+    // Revoke previous object URL to prevent memory leaks
+    if (lastPreviewObjectUrl) {
+      URL.revokeObjectURL(lastPreviewObjectUrl);
+    }
+    lastPreviewObjectUrl = URL.createObjectURL(resultBlob);
+
+    if (previewImg) previewImg.src = lastPreviewObjectUrl;
+    if (newDimBadge) {
+      if (currentOptions.targetKb > 0 && resultBlob.finalWidth && resultBlob.finalHeight) {
+        newDimBadge.textContent = `${resultBlob.finalWidth} x ${resultBlob.finalHeight} px`;
+      } else {
+        newDimBadge.textContent = `${finalCanvas.width} x ${finalCanvas.height} px`;
+      }
+    }
+    if (newSizeBadge) newSizeBadge.textContent = formatBytes(resultBlob.size);
+  }
+
+  function generatePassportGridSheet() {
+    if (!activeImageObj) return;
+    const passportCanvas = ImageProcessor.processImage(activeImageObj, currentOptions);
+    const sheetCanvas = ImageProcessor.createPassportPrintSheet(passportCanvas, { dpi: 300, rows: 2, cols: 4 });
+
+    sheetCanvas.toBlob(blob => {
+      BatchEngine.triggerBlobDownload(blob, `sizesu_passport_print_sheet_4x6.jpg`);
+    }, 'image/jpeg', 0.95);
+  }
+
+  function renderBatchGrid() {
+    const batchGrid = document.getElementById('batchGrid');
+    if (!batchGrid) return;
+
+    batchGrid.innerHTML = '';
+    batchEngine.files.forEach(item => {
+      const card = document.createElement('div');
+      card.className = `batch-item-card ${item.id === (currentActiveFile && currentActiveFile.id) ? 'active' : ''}`;
+      const sizeDiff = item.processedSize ? formatBytes(item.processedSize) : formatBytes(item.originalSize);
+
+      card.innerHTML = `
+        <button class="batch-item-remove" data-id="${item.id}">✕</button>
+        <img class="batch-item-thumb" src="${item.previewUrl}" alt="${item.name}">
+        <div class="batch-item-name">${item.name}</div>
+        <div class="batch-item-meta">
+          <span>Orig: ${formatBytes(item.originalSize)}</span>
+          <span style="color:var(--accent-emerald); font-weight:700;">${sizeDiff}</span>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('batch-item-remove')) {
+          setActiveImage(item);
+          renderBatchGrid();
+        }
+      });
+
+      card.querySelector('.batch-item-remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        batchEngine.removeFile(item.id);
+        renderBatchGrid();
+        if (batchEngine.files.length === 0 && workspaceArea) workspaceArea.style.display = 'none';
+        else if (currentActiveFile && currentActiveFile.id === item.id && batchEngine.files.length > 0) setActiveImage(batchEngine.files[0]);
+      });
+
+      batchGrid.appendChild(card);
+    });
+  }
+
+  window.showToast = function(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span>${msg}</span>`;
+
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  };
+
+  // Initialize SEO Router after all event listeners are attached
+  let seoRouter;
+  try {
+    seoRouter = new SEORouter();
+    seoRouter.init();
+  } catch (e) {
+    console.warn('SEORouter init notice:', e);
+  }
+
+  // --- Pi7 Style UI Logic ---
+  const pi7Overlay = document.getElementById('pi7Overlay');
+  const pi7Filename = document.getElementById('pi7Filename');
+  const pi7Size = document.getElementById('pi7Size');
+  const pi7Width = document.getElementById('pi7Width');
+  const pi7Height = document.getElementById('pi7Height');
+  const pi7ResizeBtn = document.getElementById('pi7ResizeBtn');
+  const pi7CropBtn = document.getElementById('pi7CropBtn');
+  
+  if (pi7ResizeBtn) {
+    pi7ResizeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const resizeTab = document.querySelector('.tool-tab[data-tool="resize"]');
+      if (resizeTab) resizeTab.click();
+    });
+  }
+
+  if (pi7CropBtn) {
+    pi7CropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cropTab = document.querySelector('.tool-tab[data-tool="crop"]');
+      if (cropTab) cropTab.click();
+    });
+  }
+
+  if (previewImg && pi7Overlay) {
+    const updatePi7 = () => {
+      // Don't show Pi7 image tools on QR or PDF generator tabs
+      if (typeof activeTab !== 'undefined' && (activeTab === 'qr' || activeTab === 'pdf')) {
+        pi7Overlay.style.display = 'none';
+        return;
+      }
+      
+      if (previewImg.src && previewImg.src.startsWith('blob:') && activeImageObj) {
+        pi7Overlay.style.display = 'block';
+        if (currentActiveFile && currentActiveFile.file) {
+          pi7Filename.textContent = currentActiveFile.file.name;
+          pi7Size.textContent = typeof formatBytes === 'function' ? formatBytes(currentActiveFile.file.size) : (currentActiveFile.file.size/1024).toFixed(2) + ' KB';
+        } else {
+          pi7Filename.textContent = 'image.jpg';
+          pi7Size.textContent = '-';
+        }
+        
+        pi7Width.textContent = activeImageObj.naturalWidth + ' PX';
+        pi7Height.textContent = activeImageObj.naturalHeight + ' PX';
+      } else {
+        pi7Overlay.style.display = 'none';
+      }
+    };
+    
+    const observer = new MutationObserver(() => {
+      setTimeout(updatePi7, 200); 
+    });
+    observer.observe(previewImg, { attributes: true, attributeFilter: ['src'] });
+    
+    // Also re-evaluate when tabs change
+    if (toolNav) {
+      toolNav.addEventListener('click', () => setTimeout(updatePi7, 50));
+    }
   }
 });

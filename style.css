@@ -1473,20 +1473,215 @@ body {
 }
 @media (max-width: 768px) { 
   .adsense-top-banner { display: none; } 
+  #quickSearchBtn kbd {
+    display: none;
+  }
+
+  #quickSearchBtn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  .theme-toggle-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .dropzone-container {
+    padding: 1.5rem 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dropzone-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 0.75rem;
+  }
+
+  .dropzone-icon-wrapper svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Workspace full width on phone */
+  .workspace-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    width: 100%;
+  }
+
+  .panel {
+    order: 2 !important;
+    width: 100% !important;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+  }
+
+  .preview-card {
+    order: 1 !important;
+    width: 100% !important;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  /* PDF pills - scrollable horizontal row */
+  #pdfModePills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.35rem;
+    padding-bottom: 0.4rem;
+  }
+  #pdfModePills::-webkit-scrollbar { display: none; }
+  #pdfModePills .pill-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  /* All preset pills wrap on mobile */
+  .preset-pills {
+    gap: 0.4rem;
+  }
+  .preset-pills .pill-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .input-row {
+    flex-wrap: wrap;
+  }
+
+  .input-row .input-control {
+    min-width: 0;
+  }
+
+  /* Canvas / image preview smaller on phone */
+  .canvas-viewport {
+    min-height: 200px;
+    max-height: 300px;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .stats-badges {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.4rem;
+  }
+
+  .stat-badge {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.72rem;
+  }
+
+  /* 2 Columns on Mobile Phone Batch Grid */
+  .batch-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .batch-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .batch-item-card {
+    padding: 0.6rem;
+  }
+
+  .batch-item-thumb {
+    height: 95px;
+  }
+
+  .batch-item-name {
+    font-size: 0.75rem;
+  }
+
+  .batch-item-meta {
+    font-size: 0.7rem;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  /* Toast stays above sticky mobile ad */
+  .toast-container {
+    bottom: 4rem;
+    right: 0.75rem;
+    left: 0.75rem;
+  }
+
+  .toast {
+    font-size: 0.825rem;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Body padding for sticky mobile footer ad */
+  body {
+    padding-bottom: 54px;
+  }
+
+  /* Download button full width on mobile */
+  #downloadPreviewDirectBtn,
+  #downloadSingleBtn {
+    width: 100%;
+  }
+}
+
+/* 6. Ultra-Small Phones (<= 360px) */
+@media (max-width: 360px) {
+  .batch-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title {
+    font-size: 1.45rem;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* --- ADSTERRA ADS & RESPONSIVENESS --- */
+.adsense-wrapper iframe { max-width: 100%; border: none; }
+.adsense-top-banner { 
+  display: flex; justify-content: center; align-items: center; 
+  margin: 1rem auto; text-align: center; overflow: hidden; 
+}
+@media (max-width: 768px) { 
+  .adsense-top-banner { display: none; } 
 }
 .adsense-skyscraper-left, .adsense-skyscraper-right {
   position: fixed; top: 50%; transform: translateY(-50%);
   display: none; z-index: 99;
 }
-.adsense-skyscraper-left { left: 1rem; width: 160px; height: 600px; }
-.adsense-skyscraper-right { right: 1rem; width: 360px; height: 800px; }
-/* replaced 
-  position: fixed; top: 50%; left: 1rem; transform: translateY(-50%); 
-  width: 160px; height: 600px; display: none; z-index: 99; 
+.adsense-skyscraper-left { width: 160px; min-height: 250px; }
+.adsense-skyscraper-right { width: 100%; min-height: 250px; }
+
+/* Hide empty or unfilled ad containers to prevent ugly blank boxes */
+ins.adsbygoogle[data-ad-status="unfilled"],
+ins.adsbygoogle:empty,
+.ad-container:empty {
+  display: none !important;
 }
-@media (min-width: 1400px) { 
-  .adsense-skyscraper-left { display: block; } 
-}
+
 .adsense-sticky-mobile-footer { 
   position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; 
   display: none; justify-content: center; align-items: center; 
@@ -1500,4 +1695,78 @@ body {
 .native-banner-wrapper { 
   display: flex; justify-content: center; align-items: center; 
   width: 100%; overflow: hidden; 
+}
+
+/* --- Pi7 Style Inline Tools Overlay --- */
+.pi7-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+  display: none;
+}
+
+.pi7-actions {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.pi7-btn {
+  background: rgba(37, 99, 235, 0.9);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.pi7-btn:hover {
+  background: rgba(29, 78, 216, 1);
+  transform: translateY(-1px);
+}
+
+.pi7-stats-box {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  background: rgba(59, 130, 246, 0.85);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.pi7-filename {
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+.pi7-stat {
+  font-weight: 600;
 }

@@ -33,8 +33,7 @@
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7012138429520024" crossorigin="anonymous"></script>
 
-  <!-- Adsterra Popunder -->
-  <script src="https://pl30775050.effectivecpmnetwork.com/a3/9c/35/a39c3541ce8593508eb12f2a75940137.js"></script>
+  <!-- Adsterra Popunder removed -->
 </head>
 <body>
 
@@ -567,7 +566,29 @@
         </div>
 
         <div class="canvas-viewport" id="previewCanvasContainer">
-          <img id="previewImg" class="preview-image" src="" alt="Preview">
+          <div id="previewImageWrapper" style="position: relative; display: inline-block; max-width: 100%; max-height: 100%;">
+            <img id="previewImg" class="preview-image" src="" alt="Preview" style="display: block;">
+            
+            <!-- Pi7 Style Inline Overlay -->
+            <div class="pi7-overlay" id="pi7Overlay" style="display: none;">
+              <div class="pi7-actions">
+                <button class="pi7-btn" id="pi7ResizeBtn" title="Resize Image">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                  Resize Pixel
+                </button>
+                <button class="pi7-btn" id="pi7CropBtn" title="Crop Image">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+                  Crop
+                </button>
+              </div>
+              <div class="pi7-stats-box">
+                <div class="pi7-filename" id="pi7Filename">image.jpg</div>
+                <div class="pi7-stat">Size:- <span id="pi7Size">0 KB</span></div>
+                <div class="pi7-stat">Width:- <span id="pi7Width">0 PX</span></div>
+                <div class="pi7-stat">Height:- <span id="pi7Height">0 PX</span></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div style="margin-top: 1rem; text-align: right;">
@@ -612,44 +633,43 @@
     </section>
 
     <!-- ==================== ADVERTISEMENT BOTTOM SECTION ==================== -->
-    <section class="ads-bottom-section" style="margin: 4rem auto; text-align: center; max-width: 1200px; display: flex; flex-direction: column; gap: 2rem; align-items: center;">
-      <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: -1rem; text-transform: uppercase; letter-spacing: 2px;">Sponsored Links</h3>
+    <section class="ads-bottom-section" style="margin: 3rem auto; text-align: center; max-width: 1200px; display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
       
-      <!-- Moved Top Leaderboard Banner here -->
-      <div style="width: 100%; display: flex; justify-content: center; overflow: hidden;">
+      <!-- Top Leaderboard Banner -->
+      <div class="ad-container" style="width: 100%; display: flex; justify-content: center; overflow: hidden;">
         <script type="text/javascript">
-          atOptions = {
-            'key' : 'ee0f26f23ec8a46c1f5ec9356e82868b',
-            'format' : 'iframe',
-            'height' : 90,
-            'width' : 728,
-            'params' : {}
-          };
+          window.atOptions = window.atOptions || {};
+          window.atOptions['key'] = 'ee0f26f23ec8a46c1f5ec9356e82868b';
+          window.atOptions['format'] = 'iframe';
+          window.atOptions['height'] = 90;
+          window.atOptions['width'] = 728;
+          window.atOptions['params'] = {};
         </script>
         <script type="text/javascript" src="https://www.highperformanceformat.com/ee0f26f23ec8a46c1f5ec9356e82868b/invoke.js"></script>
       </div>
       
-      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; width: 100%;">
-        <!-- Moved Left Skyscraper Banner here -->
-        <div style="overflow: hidden;">
+      <div class="ad-flex-row" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; width: 100%;">
+        <!-- Left Skyscraper Banner -->
+        <div class="ad-container" style="overflow: hidden;">
           <script type="text/javascript">
-            atOptions = {
-              'key' : 'ef364d5c48b122c1c2a2ace13b9cfc77',
-              'format' : 'iframe',
-              'height' : 600,
-              'width' : 160,
-              'params' : {}
-            };
+            window.atOptions = window.atOptions || {};
+            window.atOptions['key'] = 'ef364d5c48b122c1c2a2ace13b9cfc77';
+            window.atOptions['format'] = 'iframe';
+            window.atOptions['height'] = 600;
+            window.atOptions['width'] = 160;
+            window.atOptions['params'] = {};
           </script>
           <script type="text/javascript" src="https://www.highperformanceformat.com/ef364d5c48b122c1c2a2ace13b9cfc77/invoke.js"></script>
         </div>
 
-        <!-- Moved Right Skyscraper Banner here -->
-        <div style="overflow: hidden;">
+        <!-- Right AdSense Banner -->
+        <div class="ad-container" style="overflow: hidden; max-width: 100%;">
           <ins class="adsbygoogle"
-               style="display:inline-block;width:360px;height:800px"
+               style="display:block; min-width: 300px;"
                data-ad-client="ca-pub-7012138429520024"
-               data-ad-slot="9509963089"></ins>
+               data-ad-slot="9509963089"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
           <script>
                (adsbygoogle = window.adsbygoogle || []).push({});
           </script>
@@ -658,7 +678,7 @@
     </section>
 
     <!-- AdSense Autorelaxed -->
-    <div class="adsense-wrapper" style="margin: 2rem 0; width: 100%;">
+    <div class="adsense-wrapper" style="margin: 1.5rem 0; width: 100%;">
       <ins class="adsbygoogle"
            style="display:block"
            data-ad-format="autorelaxed"
