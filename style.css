@@ -433,11 +433,31 @@ body {
   grid-template-columns: 360px 1fr;
   gap: 1.75rem;
   margin-bottom: 3rem;
+  width: 100%;
+  overflow: visible;
 }
 
 @media (max-width: 1024px) {
   .workspace-grid {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Controls panel FIRST on mobile, preview BELOW */
+  .workspace-grid .panel {
+    order: 1;
+    width: 100%;
+  }
+  .workspace-grid .preview-card {
+    order: 2;
+    width: 100%;
+  }
+  .workspace-grid .adsense-sidebar {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: 90px;
   }
 }
 
@@ -968,32 +988,57 @@ body {
 /* On Tablets & Mobile Devices (<= 1024px) */
 @media (max-width: 1024px) {
   .workspace-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.25rem;
+    width: 100%;
   }
 
-  .workspace-grid .preview-card {
-    order: 1; /* Appears FIRST at top on mobile & tablet */
-  }
-
+  /* Controls panel (settings) shows FIRST on mobile */
   .workspace-grid .panel {
-    order: 2; /* Appears SECOND directly below preview */
+    order: 1 !important;
+    width: 100% !important;
+    box-sizing: border-box;
   }
 
-  .workspace-grid .adsense-sidebar {
-    order: 3; /* Appears LAST */
-  }
-
-  .preview-card {
+  /* Preview card (image) shows BELOW controls */
+  .workspace-grid .preview-card {
+    order: 2 !important;
+    width: 100% !important;
     position: relative;
     top: 0;
     z-index: 1;
   }
 
+  .workspace-grid .adsense-sidebar {
+    order: 3 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 90px;
+  }
+
   .canvas-viewport {
     min-height: 240px;
     max-height: clamp(250px, 45vh, 480px);
+  }
+
+  /* PDF submode pills - horizontal scroll on mobile */
+  #pdfModePills {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.4rem;
+    padding-bottom: 0.5rem;
+  }
+  #pdfModePills::-webkit-scrollbar {
+    display: none;
+  }
+  #pdfModePills .pill-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 }
 
@@ -1049,7 +1094,7 @@ body {
   }
 
   .nav-link {
-    display: none; /* Hide text nav links on phone, keep search & theme toggle */
+    display: none;
   }
 
   #quickSearchBtn kbd {
@@ -1082,6 +1127,57 @@ body {
     height: 24px;
   }
 
+  /* Workspace full width on phone */
+  .workspace-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    width: 100%;
+  }
+
+  .panel {
+    order: 1 !important;
+    width: 100% !important;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+  }
+
+  .preview-card {
+    order: 2 !important;
+    width: 100% !important;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  /* PDF pills - scrollable horizontal row */
+  #pdfModePills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.35rem;
+    padding-bottom: 0.4rem;
+  }
+  #pdfModePills::-webkit-scrollbar { display: none; }
+  #pdfModePills .pill-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  /* All preset pills wrap on mobile */
+  .preset-pills {
+    gap: 0.4rem;
+  }
+  .preset-pills .pill-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
   .input-row {
     flex-wrap: wrap;
   }
@@ -1090,15 +1186,42 @@ body {
     min-width: 0;
   }
 
-  .preset-pills .pill-btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
+  /* Canvas / image preview smaller on phone */
+  .canvas-viewport {
+    min-height: 200px;
+    max-height: 300px;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .stats-badges {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.4rem;
+  }
+
+  .stat-badge {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.72rem;
   }
 
   /* 2 Columns on Mobile Phone Batch Grid */
   .batch-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 0.75rem;
+  }
+
+  .batch-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
   }
 
   .batch-item-card {
@@ -1119,34 +1242,27 @@ body {
     gap: 0.15rem;
   }
 
-  .preview-card {
-    padding: 1rem;
-  }
-
-  .preview-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .stats-badges {
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .stat-badge {
-    width: 100%;
-  }
-
+  /* Toast stays above sticky mobile ad */
   .toast-container {
     bottom: 4rem;
-    right: 1rem;
-    left: 1rem;
+    right: 0.75rem;
+    left: 0.75rem;
   }
 
   .toast {
     font-size: 0.825rem;
     padding: 0.75rem 1rem;
+  }
+
+  /* Body padding for sticky mobile footer ad */
+  body {
+    padding-bottom: 54px;
+  }
+
+  /* Download button full width on mobile */
+  #downloadPreviewDirectBtn,
+  #downloadSingleBtn {
+    width: 100%;
   }
 }
 
