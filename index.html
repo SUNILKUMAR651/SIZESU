@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIZESU - Free Online Image Resizer, Target KB Compressor & Passport Photo Suite</title>
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="SIZESU is the ultimate free online Image Utility Platform. Compress images to 20KB, 50KB, 100KB for SSC, UPSC, Govt exams, make passport photos, remove background, generate QR codes, convert JPG to WEBP/PDF with 100% client-side privacy.">
+  <meta name="keywords" content="SIZESU, resize image to 20kb, resize image to 50kb, ssc photo resizer, upsc photo resizer, passport photo maker, remove background online, convert jpg to webp, image to pdf, qr code generator, pi7 alternative, iloveimg alternative">
+  <meta name="author" content="SIZESU Team">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sizesu.app/">
+  <meta property="og:title" content="SIZESU - Online Image Resizer, KB Compressor & AI Utilities">
+  <meta property="og:description" content="Compress photos to exact KB, format for government exams, remove backgrounds, convert to PDF, and edit images 100% free in your browser.">
+
+  <!-- Fonts & Stylesheets -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/tools.css">
+
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js" defer></script>
+</head>
+<body>
+  <!-- Ambient Gradient Glow Effects -->
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="#" class="brand">
+      <div class="brand-icon">S</div>
+      <div>
+        <span class="brand-title">SIZESU</span>
+        <span class="brand-badge">ULTRA SPEED</span>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <button class="badge-item" id="quickSearchBtn" style="cursor:pointer; background:var(--bg-surface-elevated); border:1px solid var(--border-color); color:var(--text-main);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Search Tools <kbd style="font-size:0.65rem; background:rgba(255,255,255,0.15); padding:0.1rem 0.3rem; border-radius:3px; margin-left:0.3rem;">Ctrl+K</kbd>
+      </button>
+      <a href="#tools" class="nav-link">Tools</a>
+      <a href="#blog" class="nav-link">Blog Guide</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+      <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Google AdSense Top Leaderboard Banner -->
+    <div class="adsense-wrapper adsense-top-banner">
+      <span class="adsense-label">Advertisement</span>
+      <div style="color:var(--text-subtle); font-size:0.8rem;">[Google AdSense Top Banner Placement - 728x90]</div>
+    </div>
+
+    <!-- Hero Header -->
+    <section class="hero-section">
+      <h1 class="hero-title">Resize, Compress & Edit Images <span class="hero-gradient-text">In Seconds</span></h1>
+      <p class="hero-subtitle">100% Free, Private & Superfast. Compress photos to exact KB/MB for Government Forms, Visas, Passport Photos, and Social Media without losing quality.</p>
+      
+      <div class="hero-badges">
+        <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> 100% Client-Side Privacy</span>
+        <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Batch Processing</span>
+        <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Exact Target KB Solver</span>
+        <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> AI Background Removal</span>
+        <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Image to PDF Converter</span>
+      </div>
+    </section>
+
+    <!-- Master Dropzone Area -->
+    <div class="dropzone-container" id="dropzone">
+      <div class="dropzone-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <h2 class="dropzone-title">Drag & Drop Your Images Here</h2>
+      <p class="dropzone-desc">Supports JPG, PNG, WEBP, AVIF, GIF, BMP & SVG (Single or Multiple Batch Files). You can also paste from Clipboard (Ctrl+V).</p>
+      
+      <div class="dropzone-actions">
+        <button class="btn btn-primary" id="selectFilesBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Select Images
+        </button>
+        <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/*">
+      </div>
+    </div>
+
+    <!-- Active Tool Tabs -->
+    <nav class="tool-nav" id="toolNav">
+      <button class="tool-tab active" data-tool="resize">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        Resize & Scale
+      </button>
+      <button class="tool-tab" data-tool="compress">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        Compress to Exact KB
+      </button>
+      <button class="tool-tab" data-tool="passport">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Passport Photo Maker
+      </button>
+      <button class="tool-tab" data-tool="ai">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/></svg>
+        AI Background Remover
+      </button>
+      <button class="tool-tab" data-tool="pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Image to PDF
+      </button>
+      <button class="tool-tab" data-tool="qr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        QR Code Generator
+      </button>
+      <button class="tool-tab" data-tool="social">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        Social Media Presets
+      </button>
+      <button class="tool-tab" data-tool="crop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+        Crop, Flip & Rotate
+      </button>
+      <button class="tool-tab" data-tool="convert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Format Converter
+      </button>
+    </nav>
+
+    <!-- Workspace Grid Layout (Hidden until images uploaded) -->
+    <div class="workspace-grid" id="workspaceArea" style="display: none;">
+      
+      <!-- Control Panel Sidebar -->
+      <aside class="panel">
+        
+        <!-- Panel 1: Resize & Scale -->
+        <div class="tool-panel" id="panel_resize">
+          <h3 class="panel-title">Resize Dimensions</h3>
+          <div class="panel-group">
+            <label class="panel-label">Measurement Unit & DPI</label>
+            <div class="input-row">
+              <select id="unitSelect" class="input-control select-control">
+                <option value="px">Pixels (px)</option>
+                <option value="cm">Centimeters (cm)</option>
+                <option value="mm">Millimeters (mm)</option>
+                <option value="inch">Inches (in)</option>
+              </select>
+              <select id="dpiSelect" class="input-control select-control">
+                <option value="72">72 DPI</option>
+                <option value="96">96 DPI</option>
+                <option value="150">150 DPI</option>
+                <option value="300" selected>300 DPI</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Width & Height</label>
+            <div class="input-row">
+              <input type="number" id="inputWidth" class="input-control" placeholder="Width">
+              <button class="lock-aspect-btn active" id="lockAspectBtn" title="Toggle Aspect Ratio Lock">🔗</button>
+              <input type="number" id="inputHeight" class="input-control" placeholder="Height">
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Output Format & Quality</label>
+            <select id="formatSelect" class="input-control select-control" style="margin-bottom: 0.75rem;">
+              <option value="image/jpeg">JPG / JPEG</option>
+              <option value="image/png">PNG (Transparent)</option>
+              <option value="image/webp">WEBP (Modern Compressed)</option>
+              <option value="image/avif">AVIF (Next-Gen)</option>
+            </select>
+            
+            <div class="slider-container">
+              <input type="range" id="qualitySlider" class="range-slider" min="5" max="100" value="90">
+              <span class="slider-val" id="qualityVal">90%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Compress to Exact KB -->
+        <div class="tool-panel" id="panel_compress" style="display: none;">
+          <h3 class="panel-title">Target KB File Size Solver</h3>
+          <p class="hero-subtitle" style="font-size: 0.85rem; text-align: left; margin-bottom: 1rem;">Compress photo under strict KB targets for SSC, UPSC, GATE, Passport & Job portals.</p>
+          
+          <div class="panel-group">
+            <label class="panel-label">Target Max File Size (in KB)</label>
+            <input type="number" id="targetKbInput" class="input-control" placeholder="e.g. 50 KB" value="50">
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Quick Presets</label>
+            <div class="preset-pills">
+              <button class="pill-btn" data-kb="10">10 KB</button>
+              <button class="pill-btn" data-kb="20">20 KB</button>
+              <button class="pill-btn active" data-kb="50">50 KB</button>
+              <button class="pill-btn" data-kb="100">100 KB</button>
+              <button class="pill-btn" data-kb="200">200 KB</button>
+              <button class="pill-btn" data-kb="500">500 KB</button>
+              <button class="pill-btn" data-kb="1024">1 MB</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Passport Photo Maker -->
+        <div class="tool-panel" id="panel_passport" style="display: none;">
+          <h3 class="panel-title">Passport Photo & Print Sheet</h3>
+          <div class="panel-group">
+            <label class="panel-label">Select Country / Document</label>
+            <select id="passportPresetSelect" class="input-control select-control"></select>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Background Color Replacement</label>
+            <select id="passportBgSelect" class="input-control select-control">
+              <option value="transparent">Keep Original</option>
+              <option value="#ffffff" selected>White (#ffffff)</option>
+              <option value="#e2e8f0">Light Grey / Cream</option>
+              <option value="#2563eb">Blue (#2563eb)</option>
+              <option value="#dc2626">Red (#dc2626)</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-secondary" id="passportGridSheetBtn" style="width:100%; margin-top:1rem;">
+            Generate 4x6" Printable Sheet
+          </button>
+        </div>
+
+        <!-- Panel: AI Background Remover -->
+        <div class="tool-panel" id="panel_ai" style="display: none;">
+          <h3 class="panel-title">AI Background Removal</h3>
+          <div class="panel-group">
+            <label class="panel-label">New Background</label>
+            <select id="aiBgColorSelect" class="input-control select-control">
+              <option value="transparent">Transparent PNG</option>
+              <option value="#ffffff">Solid White</option>
+              <option value="#2563eb">Passport Blue</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="aiRemoveBgBtn" style="width:100%;">Remove Background Now</button>
+        </div>
+
+        <!-- Panel: PDF Tools Suite -->
+        <div class="tool-panel" id="panel_pdf" style="display: none;">
+          <h3 class="panel-title">PDF Tools Suite</h3>
+          
+          <!-- PDF Submode Pills -->
+          <div class="preset-pills" id="pdfModePills" style="margin-bottom: 1.25rem;">
+            <button class="pill-btn active" data-pdfmode="img2pdf">📸 Photo to PDF</button>
+            <button class="pill-btn" data-pdfmode="pdf2img">🖼️ PDF to Photo</button>
+            <button class="pill-btn" data-pdfmode="merge">📑 Merge PDFs</button>
+            <button class="pill-btn" data-pdfmode="compress">📉 Compress PDF</button>
+          </div>
+
+          <!-- Submode 1: Photo to PDF -->
+          <div class="pdf-submode" id="pdfSubmode_img2pdf">
+            <p class="hero-subtitle" style="font-size:0.85rem; text-align:left; margin-bottom:1rem;">Convert uploaded photos into a multi-page PDF document.</p>
+            
+            <div class="panel-group">
+              <label class="panel-label">Page Size</label>
+              <select id="pdfPageSizeSelect" class="input-control select-control">
+                <option value="a4" selected>A4 (210 x 297 mm)</option>
+                <option value="letter">US Letter (8.5 x 11 in)</option>
+              </select>
+            </div>
+
+            <div class="panel-group">
+              <label class="panel-label">Page Orientation</label>
+              <select id="pdfOrientationSelect" class="input-control select-control">
+                <option value="portrait" selected>Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </div>
+
+            <div class="panel-group">
+              <label class="panel-label">Margins</label>
+              <select id="pdfMarginSelect" class="input-control select-control">
+                <option value="0">None (0 mm)</option>
+                <option value="10">Small (10 mm)</option>
+                <option value="20" selected>Normal (20 mm)</option>
+              </select>
+            </div>
+
+            <button class="btn btn-success" id="generatePdfBtn" style="width:100%;">Download Images as PDF</button>
+          </div>
+
+          <!-- Submode 2: PDF to Photo -->
+          <div class="pdf-submode" id="pdfSubmode_pdf2img" style="display: none;">
+            <p class="hero-subtitle" style="font-size:0.85rem; text-align:left; margin-bottom:1rem;">Convert PDF document pages into high-resolution JPG or PNG images.</p>
+            
+            <div class="panel-group">
+              <label class="panel-label">Select PDF File</label>
+              <input type="file" id="pdfToPhotoInput" class="input-control" accept="application/pdf" style="padding: 0.5rem;">
+            </div>
+
+            <div class="panel-group">
+              <label class="panel-label">Output Image Format</label>
+              <select id="pdfToPhotoFormatSelect" class="input-control select-control">
+                <option value="image/jpeg" selected>JPG / JPEG Photo</option>
+                <option value="image/png">PNG Photo (Lossless)</option>
+              </select>
+            </div>
+
+            <div class="panel-group">
+              <label class="panel-label">Resolution (DPI)</label>
+              <select id="pdfToPhotoDpiSelect" class="input-control select-control">
+                <option value="150">150 DPI (Standard)</option>
+                <option value="300" selected>300 DPI (High Print Quality)</option>
+              </select>
+            </div>
+
+            <button class="btn btn-primary" id="pdfToPhotoBtn" style="width:100%;">Extract & Convert PDF to Photos</button>
+          </div>
+
+          <!-- Submode 3: Merge PDFs -->
+          <div class="pdf-submode" id="pdfSubmode_merge" style="display: none;">
+            <p class="hero-subtitle" style="font-size:0.85rem; text-align:left; margin-bottom:1rem;">Combine multiple PDF files into one single PDF document.</p>
+            
+            <div class="panel-group">
+              <label class="panel-label">Select PDF Files to Merge</label>
+              <input type="file" id="mergePdfFilesInput" class="input-control" accept="application/pdf" multiple style="padding: 0.5rem;">
+            </div>
+
+            <div id="mergePdfFileList" style="margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-muted);"></div>
+
+            <button class="btn btn-primary" id="mergePdfBtn" style="width:100%;">Merge PDFs Now</button>
+          </div>
+
+          <!-- Submode 4: PDF Target KB/MB Compressor -->
+          <div class="pdf-submode" id="pdfSubmode_compress" style="display: none;">
+            <p class="hero-subtitle" style="font-size:0.85rem; text-align:left; margin-bottom:1rem;">Compress and resize PDF file size to exact Target KB or MB size.</p>
+            
+            <div class="panel-group">
+              <label class="panel-label">Select PDF Document</label>
+              <input type="file" id="pdfCompressInput" class="input-control" accept="application/pdf" style="padding: 0.5rem;">
+            </div>
+
+            <div class="panel-group">
+              <label class="panel-label">Target File Size (KB or MB)</label>
+              <div class="input-row">
+                <input type="number" id="pdfTargetSizeValue" class="input-control" placeholder="e.g. 200" value="200" min="10">
+                <select id="pdfTargetSizeUnit" class="input-control select-control" style="width: 90px;">
+                  <option value="KB" selected>KB</option>
+                  <option value="MB">MB</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="preset-pills" id="pdfTargetPills" style="margin-bottom: 1rem;">
+              <button class="pill-btn" data-pdfkb="100">100 KB</button>
+              <button class="pill-btn active" data-pdfkb="200">200 KB</button>
+              <button class="pill-btn" data-pdfkb="500">500 KB</button>
+              <button class="pill-btn" data-pdfkb="1024">1 MB</button>
+              <button class="pill-btn" data-pdfkb="2048">2 MB</button>
+            </div>
+
+            <button class="btn btn-primary" id="compressPdfBtn" style="width:100%;">Compress PDF to Target Size</button>
+          </div>
+        </div>
+
+        <!-- Panel: QR Code Generator -->
+        <div class="tool-panel" id="panel_qr" style="display: none;">
+          <h3 class="panel-title">QR Code Generator</h3>
+          <div class="panel-group">
+            <label class="panel-label">URL or Text</label>
+            <input type="text" id="qrTextInput" class="input-control" placeholder="https://example.com" value="https://sizesu.app">
+          </div>
+          <div class="panel-group">
+            <label class="panel-label">Colors</label>
+            <div class="input-row">
+              <div style="flex:1;">
+                <label class="panel-label" style="font-size:0.75rem;">Foreground</label>
+                <input type="color" id="qrFgColorInput" class="input-control" value="#000000" style="height:40px; padding:0.2rem;">
+              </div>
+              <div style="flex:1;">
+                <label class="panel-label" style="font-size:0.75rem;">Background</label>
+                <input type="color" id="qrBgColorInput" class="input-control" value="#ffffff" style="height:40px; padding:0.2rem;">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="generateQrBtn" style="width:100%;">Generate QR Code</button>
+        </div>
+
+        <!-- Panel: Social Media -->
+        <div class="tool-panel" id="panel_social" style="display: none;">
+          <h3 class="panel-title">Social Media Specs</h3>
+          <div class="panel-group">
+            <select id="socialPresetSelect" class="input-control select-control"></select>
+          </div>
+        </div>
+
+        <!-- Panel: Crop, Rotate & Adjustments -->
+        <div class="tool-panel" id="panel_crop" style="display: none;">
+          <h3 class="panel-title">Crop, Flip & Rotate</h3>
+          
+          <div class="panel-group">
+            <label class="panel-label">Aspect Ratio Presets</label>
+            <div class="preset-pills" id="cropRatioPills">
+              <button class="pill-btn active" data-ratio="free">Freeform</button>
+              <button class="pill-btn" data-ratio="1">1:1 Square</button>
+              <button class="pill-btn" data-ratio="1.333">4:3 Standard</button>
+              <button class="pill-btn" data-ratio="1.777">16:9 HD</button>
+              <button class="pill-btn" data-ratio="0.5625">9:16 Story</button>
+              <button class="pill-btn" data-ratio="0.777">3.5:4.5 Passport</button>
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Rotate & Flip</label>
+            <div class="input-row">
+              <button class="btn btn-secondary" id="rotateCwBtn" style="flex:1;" title="Rotate 90° Clockwise">↻ Rotate</button>
+              <button class="btn btn-secondary" id="flipHBtn" style="flex:1;" title="Flip Horizontal">↔ Flip H</button>
+              <button class="btn btn-secondary" id="flipVBtn" style="flex:1;" title="Flip Vertical">↕ Flip V</button>
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Brightness</label>
+            <div class="slider-container">
+              <input type="range" id="brightnessSlider" class="range-slider" min="50" max="150" value="100">
+              <span class="slider-val" id="brightnessVal">100%</span>
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Contrast</label>
+            <div class="slider-container">
+              <input type="range" id="contrastSlider" class="range-slider" min="50" max="150" value="100">
+              <span class="slider-val" id="contrastVal">100%</span>
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <label class="panel-label">Saturation</label>
+            <div class="slider-container">
+              <input type="range" id="saturationSlider" class="range-slider" min="0" max="200" value="100">
+              <span class="slider-val" id="saturationVal">100%</span>
+            </div>
+          </div>
+
+          <div class="panel-group" style="border-top:1px dashed var(--border-color); padding-top:0.75rem; margin-top:1rem;">
+            <label class="panel-label">Watermark Text</label>
+            <input type="text" id="watermarkTextInput" class="input-control" placeholder="e.g. © SIZESU 2026" style="margin-bottom:0.5rem;">
+            <div class="input-row">
+              <select id="watermarkPosSelect" class="input-control select-control" style="flex:2;">
+                <option value="bottom-right">Bottom Right</option>
+                <option value="bottom-left">Bottom Left</option>
+                <option value="top-right">Top Right</option>
+                <option value="top-left">Top Left</option>
+                <option value="center">Center</option>
+              </select>
+              <input type="color" id="watermarkColorInput" class="input-control" value="#ffffff" style="flex:1; height:38px; padding:0.2rem;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Format Converter -->
+        <div class="tool-panel" id="panel_convert" style="display: none;">
+          <h3 class="panel-title">Format Converter</h3>
+          <div class="panel-group">
+            <label class="panel-label">Target Format</label>
+            <select id="convertFormatSelect" class="input-control select-control">
+              <option value="image/jpeg">JPG / JPEG (Standard)</option>
+              <option value="image/png">PNG (Lossless Transparent)</option>
+              <option value="image/webp">WEBP (Modern Compressed)</option>
+              <option value="image/avif">AVIF (Next-Gen)</option>
+            </select>
+          </div>
+          <div class="panel-group">
+            <label class="panel-label">Output Quality</label>
+            <div class="slider-container">
+              <input type="range" id="convertQualitySlider" class="range-slider" min="10" max="100" value="90">
+              <span class="slider-val" id="convertQualityVal">90%</span>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="convertBtn" style="width:100%;">Convert Image Now</button>
+        </div>
+
+        <!-- Action Download Buttons -->
+        <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+          <button class="btn btn-success" id="downloadSingleBtn" style="width: 100%; margin-bottom: 0.75rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Image
+          </button>
+        </div>
+      </aside>
+
+      <!-- Live Canvas & Preview Area -->
+      <section class="preview-card">
+        <div class="preview-header">
+          <div class="preview-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Live Preview & Stats
+          </div>
+
+          <div class="stats-badges">
+            <div class="stat-badge">Original: <span id="origDimBadge">0x0</span> | <span id="origSizeBadge">0 KB</span></div>
+            <div class="stat-badge" style="border-color: var(--accent-emerald);">Result: <span id="newDimBadge">0x0</span> | <span id="newSizeBadge" style="color:var(--accent-emerald);">0 KB</span></div>
+          </div>
+        </div>
+
+        <div class="canvas-viewport" id="previewCanvasContainer">
+          <img id="previewImg" class="preview-image" src="" alt="Preview">
+        </div>
+
+        <div style="margin-top: 1rem; text-align: right;">
+          <button class="btn btn-success" id="downloadPreviewDirectBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Result Image Now
+          </button>
+        </div>
+      </section>
+
+      <!-- Google AdSense Sidebar Banner -->
+      <div class="adsense-wrapper adsense-sidebar">
+        <span class="adsense-label">Advertisement</span>
+        <div style="color:var(--text-subtle); font-size:0.8rem;">[AdSense Sidebar Unit - 300x250]</div>
+      </div>
+    </div>
+
+    <!-- Batch Grid Section -->
+    <section class="batch-section">
+      <div class="batch-header">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Uploaded Batch Queue</h3>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary" id="processBatchBtn">Process All Batch</button>
+          <button class="btn btn-primary" id="downloadZipBtn">Download All as ZIP</button>
+        </div>
+      </div>
+      <div class="batch-grid" id="batchGrid"></div>
+    </section>
+
+    <!-- Related Tools SEO Internal Links -->
+    <section style="margin: 3rem 0;">
+      <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:1rem;">Popular Related Tools</h3>
+      <div id="relatedToolsContainer" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
+    </section>
+
+    <!-- Blog Guide Section -->
+    <section id="blog" style="margin: 4rem 0;">
+      <h2 style="font-size: 1.75rem; font-weight: 800; text-align: center; margin-bottom: 0.5rem;">Image Resizing Guides &amp; Tutorials</h2>
+      <p style="text-align:center; color:var(--text-muted); margin-bottom: 2rem; font-size:0.95rem;">Expert tips for government exam photo requirements, passport standards, and more.</p>
+      <div id="blogGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:1.25rem;"></div>
+    </section>
+
+    <!-- FAQ Accordion Section -->
+    <section id="faq" style="margin: 4rem 0;">
+      <h2 style="font-size: 1.75rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+      <div id="faqContainer"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <a href="#" class="brand">
+          <div class="brand-icon">S</div>
+          <span class="brand-title">SIZESU</span>
+        </a>
+        <p>The ultimate free online image & utility platform to crop, resize, compress, convert, and format photos for everyone.</p>
+      </div>
+
+      <div>
+        <h4 class="footer-heading">Target KB Tools</h4>
+        <ul class="footer-links">
+          <li><a href="#tool/resize-image-to-20kb">Resize Image to 20KB</a></li>
+          <li><a href="#tool/resize-image-to-50kb">Resize Image to 50KB</a></li>
+          <li><a href="#tool/resize-image-to-100kb">Resize Image to 100KB</a></li>
+          <li><a href="#tool/resize-signature-to-20kb">Resize Signature to 20KB</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-heading">Govt & Exams</h4>
+        <ul class="footer-links">
+          <li><a href="#tool/ssc-photo-resize">SSC Photo & Signature</a></li>
+          <li><a href="#tool/upsc-photo-resize">UPSC Photo Converter</a></li>
+          <li><a href="#tool/passport-photo-maker">Passport Photo Maker</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-heading">Converters & AI</h4>
+        <ul class="footer-links">
+          <li><a href="#tool/png-to-jpg">PNG to JPG</a></li>
+          <li><a href="#tool/jpg-to-webp">JPG to WEBP</a></li>
+          <li><a href="#tool/remove-background">AI Background Remover</a></li>
+          <li><a href="#tool/image-to-pdf">Image to PDF</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 SIZESU. All rights reserved.</p>
+      <p>100% Free & Client-Side Private.</p>
+    </div>
+  </footer>
+
+  <!-- Universal Search Modal (Ctrl+K) -->
+  <div class="modal-overlay" id="searchModal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size:1.1rem; font-weight:700;">Search 50+ SIZESU Tools</h3>
+        <button class="modal-close-btn" id="searchCloseBtn">&times;</button>
+      </div>
+      <input type="text" id="searchInput" class="input-control" placeholder="Type to search (e.g. 20KB, SSC, PNG to JPG, PDF)..." style="font-size:1.1rem; padding:0.85rem;">
+      <div class="search-results-list" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- Mobile Sticky Ad Footer -->
+  <div class="adsense-sticky-mobile-footer">
+    <span style="font-size:0.75rem; color:var(--text-muted);">AdSense Sticky Mobile Footer (320x50)</span>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Script Imports -->
+  <script src="js/presetData.js"></script>
+  <script src="js/imageProcessor.js"></script>
+  <script src="js/cropEngine.js"></script>
+  <script src="js/batchEngine.js"></script>
+  <script src="js/aiEngine.js"></script>
+  <script src="js/pdfEngine.js"></script>
+  <script src="js/qrEngine.js"></script>
+  <script src="js/seoData.js"></script>
+  <script src="js/seoRouter.js"></script>
+  <script src="js/blogEngine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
