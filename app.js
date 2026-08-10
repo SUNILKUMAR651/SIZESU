@@ -218,6 +218,50 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Sidebar & Mobile Nav Logic
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+    const mobileSidebar = document.getElementById('mobileSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar(show) {
+      if (!mobileSidebar || !sidebarOverlay) return;
+      if(show) {
+        mobileSidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+      } else {
+        mobileSidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+      }
+    }
+
+    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', () => toggleSidebar(true));
+    if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', () => toggleSidebar(false));
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+
+    // Nav and Sidebar Tool Links Logic
+    document.querySelectorAll('.nav-tool-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetTool = link.dataset.tool;
+        if(toolNav) {
+          const targetBtn = toolNav.querySelector(`.tool-tab[data-tool="${targetTool}"]`);
+          if(targetBtn) targetBtn.click(); // Reuse existing logic
+        }
+        toggleSidebar(false); // Close sidebar if open
+        
+        // Highlight active sidebar link
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        if(link.classList.contains('sidebar-link')) {
+          link.classList.add('active');
+        } else {
+          // If clicked from navbar, highlight in sidebar too
+          const sidebarLink = document.querySelector(`.sidebar-link[data-tool="${targetTool}"]`);
+          if(sidebarLink) sidebarLink.classList.add('active');
+        }
+      });
+    });
+
     // Handle incoming SEO route changes to activate corresponding tab
     window.addEventListener('toolRouteChanged', (e) => {
       const config = e.detail;

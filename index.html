@@ -79,16 +79,68 @@
     <nav class="nav-links">
       <button class="badge-item" id="quickSearchBtn" style="cursor:pointer; background:var(--bg-surface-elevated); border:1px solid var(--border-color); color:var(--text-main);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Search Tools <kbd style="font-size:0.65rem; background:rgba(255,255,255,0.15); padding:0.1rem 0.3rem; border-radius:3px; margin-left:0.3rem;">Ctrl+K</kbd>
+        Search Tools <kbd class="hide-mobile" style="font-size:0.65rem; background:rgba(255,255,255,0.15); padding:0.1rem 0.3rem; border-radius:3px; margin-left:0.3rem;">Ctrl+K</kbd>
       </button>
-      <a href="#tools" class="nav-link">Tools</a>
+      
+      <!-- Dropdown for Tools on Desktop -->
+      <div class="dropdown-container">
+        <a href="#tools" class="nav-link dropdown-toggle">Tools ▾</a>
+        <div class="dropdown-menu">
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="resize">Resize & Scale</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="compress">Compress to Exact KB</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="passport">Passport Photo Maker</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="ai">AI Background Remover</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="pdf">Image to PDF</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="qr">QR Code Generator</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="social">Social Media Presets</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="crop">Crop, Flip & Rotate</a>
+          <a href="#" class="dropdown-item nav-tool-link" data-tool="convert">Format Converter</a>
+        </div>
+      </div>
+      
       <a href="#blog" class="nav-link">Blog Guide</a>
       <a href="#faq" class="nav-link">FAQ</a>
+      
       <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
+
+      <!-- Hamburger Menu for Mobile -->
+      <button class="hamburger-btn" id="sidebarToggleBtn" aria-label="Open Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
     </nav>
   </header>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Mobile Sidebar -->
+  <aside class="mobile-sidebar" id="mobileSidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">S</div>
+        <span class="brand-title">SIZESU</span>
+      </div>
+      <button class="close-sidebar-btn" id="sidebarCloseBtn">&times;</button>
+    </div>
+    <div class="sidebar-content">
+      <h4 class="sidebar-heading">Our Tools</h4>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="resize">Resize & Scale</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="compress">Compress to Exact KB</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="passport">Passport Photo Maker</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="ai">AI Background Remover</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="pdf">Image to PDF</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="qr">QR Code Generator</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="social">Social Media Presets</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="crop">Crop, Flip & Rotate</a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="convert">Format Converter</a>
+      
+      <h4 class="sidebar-heading" style="margin-top: 1.5rem;">Explore</h4>
+      <a href="#blog" class="sidebar-link">Blog Guide</a>
+      <a href="#faq" class="sidebar-link">FAQ</a>
+    </div>
+  </aside>
 
   <!-- Main Container -->
   <main class="container">
