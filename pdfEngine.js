@@ -291,11 +291,11 @@ class PDFEngine {
         quality: currentQuality
       });
 
-      if (!bestBlob || candidateBlob.size <= targetBytes) {
+      if (candidateBlob.size <= targetBytes) {
         bestBlob = candidateBlob;
-        minQuality = currentQuality;
+        minQuality = currentQuality; // Try higher quality
       } else {
-        maxQuality = currentQuality;
+        maxQuality = currentQuality; // Reduce quality to fit
       }
     }
 

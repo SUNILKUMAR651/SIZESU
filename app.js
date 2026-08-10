@@ -884,8 +884,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function onDimensionChange(changedAxis) {
-    let w = parseInt(inputWidth.value, 10) || 0;
-    let h = parseInt(inputHeight.value, 10) || 0;
+    let w = parseInt(inputWidth.value, 10);
+    let h = parseInt(inputHeight.value, 10);
+
+    if (isNaN(w) || w <= 0 || isNaN(h) || h <= 0) return;
 
     if (isAspectLocked && aspectRatioValue) {
       if (changedAxis === 'width' && w > 0) {
@@ -956,7 +958,13 @@ document.addEventListener('DOMContentLoaded', () => {
     lastPreviewObjectUrl = URL.createObjectURL(resultBlob);
 
     if (previewImg) previewImg.src = lastPreviewObjectUrl;
-    if (newDimBadge) newDimBadge.textContent = `${finalCanvas.width} x ${finalCanvas.height} px`;
+    if (newDimBadge) {
+      if (currentOptions.targetKb > 0 && resultBlob.finalWidth && resultBlob.finalHeight) {
+        newDimBadge.textContent = `${resultBlob.finalWidth} x ${resultBlob.finalHeight} px`;
+      } else {
+        newDimBadge.textContent = `${finalCanvas.width} x ${finalCanvas.height} px`;
+      }
+    }
     if (newSizeBadge) newSizeBadge.textContent = formatBytes(resultBlob.size);
   }
 

@@ -29,9 +29,9 @@ class ImageProcessor {
    * Resize and adjust image on canvas
    */
   static processImage(img, options = {}) {
-    const {
-      width = img.naturalWidth || img.width,
-      height = img.naturalHeight || img.height,
+    let {
+      width,
+      height,
       rotation = 0,
       flipH = false,
       flipV = false,
@@ -41,6 +41,9 @@ class ImageProcessor {
       watermark = null,
       backgroundColor = null
     } = options;
+
+    width = width || img.naturalWidth || img.width;
+    height = height || img.naturalHeight || img.height;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -90,8 +93,8 @@ class ImageProcessor {
    */
   static async compressToTargetKb(img, targetKb, format = 'image/jpeg', options = {}) {
     const targetBytes = targetKb * 1024;
-    // Allow up to 2% tolerance above target (browser encoding is not exact)
-    const toleranceBytes = targetBytes * 1.02;
+    // Strict requirement: the size MUST NOT exceed targetKb
+    const toleranceBytes = targetBytes;
 
     let minQuality = 0.02;
     let maxQuality = 1.0;
@@ -129,8 +132,8 @@ class ImageProcessor {
           maxQuality = midQuality; // Too large — reduce quality
         }
 
-        // Early exit: if within 98-100% of target, perfect match found
-        if (iterBest && iterBest.size >= targetBytes * 0.90 && iterBest.size <= toleranceBytes) {
+        // Early exit: if within 95-100% of target, perfect match found
+        if (iterBest && iterBest.size >= targetBytes * 0.95 && iterBest.size <= toleranceBytes) {
           break;
         }
       }
@@ -145,14 +148,22 @@ class ImageProcessor {
       currentHeight *= 0.85;
     }
 
-    // Final fallback: use absolute minimum quality at smallest scale
     if (!bestBlob) {
+      const finalW = Math.max(Math.round(currentWidth), 50);
+      const finalH = Math.max(Math.round(currentHeight), 50);
       const finalCanvas = ImageProcessor.processImage(img, {
         ...options,
-        width: Math.max(Math.round(currentWidth), 50),
-        height: Math.max(Math.round(currentHeight), 50)
+        width: finalW,
+        height: finalH
       });
       bestBlob = await ImageProcessor.canvasToBlob(finalCanvas, compressFormat, 0.02);
+      if (bestBlob) {
+        bestBlob.finalWidth = finalW;
+        bestBlob.finalHeight = finalH;
+      }
+    } else {
+      bestBlob.finalWidth = Math.round(currentWidth);
+      bestBlob.finalHeight = Math.round(currentHeight);
     }
 
     return bestBlob;
@@ -162,9 +173,12 @@ class ImageProcessor {
    * Helper to convert HTMLCanvasElement to Blob
    */
   static canvasToBlob(canvas, mimeType = 'image/jpeg', quality = 0.92) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       canvas.toBlob(
-        (blob) => resolve(blob),
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Canvas to Blob failed. Size might be 0.'));
+        },
         mimeType,
         mimeType === 'image/png' ? undefined : quality
       );

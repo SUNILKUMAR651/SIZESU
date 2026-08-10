@@ -443,14 +443,20 @@ body {
     display: flex;
     flex-direction: column;
   }
-  /* Controls panel FIRST on mobile, preview BELOW */
+  /* Controls panel (settings) shows BELOW preview on mobile */
   .workspace-grid .panel {
-    order: 1;
-    width: 100%;
+    order: 2 !important;
+    width: 100% !important;
+    box-sizing: border-box;
   }
+
+  /* Preview card (image) shows FIRST on mobile */
   .workspace-grid .preview-card {
-    order: 2;
-    width: 100%;
+    order: 1 !important;
+    width: 100% !important;
+    position: relative;
+    top: 0;
+    z-index: 1;
   }
   .workspace-grid .adsense-sidebar {
     order: 3;
@@ -994,16 +1000,16 @@ body {
     width: 100%;
   }
 
-  /* Controls panel (settings) shows FIRST on mobile */
+  /* Controls panel (settings) shows BELOW preview on mobile */
   .workspace-grid .panel {
-    order: 1 !important;
+    order: 2 !important;
     width: 100% !important;
     box-sizing: border-box;
   }
 
-  /* Preview card (image) shows BELOW controls */
+  /* Preview card (image) shows FIRST (above controls) */
   .workspace-grid .preview-card {
-    order: 2 !important;
+    order: 1 !important;
     width: 100% !important;
     position: relative;
     top: 0;
@@ -1138,14 +1144,14 @@ body {
   }
 
   .panel {
-    order: 1 !important;
+    order: 2 !important;
     width: 100% !important;
     border-radius: var(--radius-md);
     padding: 1rem;
   }
 
   .preview-card {
-    order: 2 !important;
+    order: 1 !important;
     width: 100% !important;
     padding: 1rem;
     border-radius: var(--radius-md);
@@ -1281,4 +1287,35 @@ body {
     padding: 0.65rem 1rem;
     font-size: 0.85rem;
   }
+}
+
+/* --- ADSTERRA ADS & RESPONSIVENESS --- */
+.adsense-wrapper iframe { max-width: 100%; border: none; }
+.adsense-top-banner { 
+  display: flex; justify-content: center; align-items: center; 
+  margin: 1rem auto; text-align: center; overflow: hidden; 
+}
+@media (max-width: 768px) { 
+  .adsense-top-banner { display: none; } 
+}
+.adsense-skyscraper-left { 
+  position: fixed; top: 50%; left: 1rem; transform: translateY(-50%); 
+  width: 160px; height: 600px; display: none; z-index: 99; 
+}
+@media (min-width: 1400px) { 
+  .adsense-skyscraper-left { display: block; } 
+}
+.adsense-sticky-mobile-footer { 
+  position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; 
+  display: none; justify-content: center; align-items: center; 
+  background: var(--bg-surface-elevated); z-index: 999; 
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.2); 
+}
+@media (max-width: 768px) { 
+  .adsense-sticky-mobile-footer { display: flex; } 
+  body { padding-bottom: 60px; } 
+}
+.native-banner-wrapper { 
+  display: flex; justify-content: center; align-items: center; 
+  width: 100%; overflow: hidden; 
 }
