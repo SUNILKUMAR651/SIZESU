@@ -710,15 +710,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Universal Download Single Button
-    const performDownloadCurrent = () => {
-      const ext = currentOptions.format.split('/')[1] || 'jpg';
+    const performDownloadCurrent = async () => {
+      if (!activeImageObj && activeTab !== 'pdf' && activeTab !== 'qr') {
+        showToast('Please upload an image first!', 'error');
+        return;
+      }
+
+      const ext = currentOptions.format.split('/')[1].replace('jpeg','jpg') || 'jpg';
+      const filename = currentActiveFile ? currentActiveFile.name.replace(/\.[^.]+$/, '') : 'sizesu_image';
+
+      // === COMPRESS TO EXACT TARGET KB MODE ===
+      if (activeTab === 'compress' && currentOptions.targetKb > 0) {
+        if (downloadSingleBtn) downloadSingleBtn.textContent = '⏳ Compressing...';
+        if (downloadPreviewDirectBtn) downloadPreviewDirectBtn.textContent = '⏳ Compressing...';
+
+        try {
+          const blob = await ImageProcessor.compressToTargetKb(
+            activeImageObj,
+            currentOptions.targetKb,
+            currentOptions.format,
+            currentOptions
+          );
+
+          const actualKb = (blob.size / 1024).toFixed(1);
+          const targetKb = currentOptions.targetKb;
+          const isWithinTarget = blob.size <= targetKb * 1024;
+
+          BatchEngine.triggerBlobDownload(blob, `${filename}_${targetKb}kb.${ext}`);
+
+          if (isWithinTarget) {
+            showToast(`✅ Downloaded! Size: ${actualKb} KB (Target: ${targetKb} KB)`, 'success');
+          } else {
+            showToast(`⚠️ Downloaded at ${actualKb} KB — image too complex for ${targetKb} KB target`, 'info');
+          }
+        } catch (err) {
+          showToast('Compression failed. Try a larger target KB.', 'error');
+        } finally {
+          if (downloadSingleBtn) downloadSingleBtn.textContent = 'Download Image';
+          if (downloadPreviewDirectBtn) downloadPreviewDirectBtn.textContent = 'Download Result Image Now';
+        }
+        return;
+      }
+
+      // === NORMAL DOWNLOAD (resize / convert / passport / crop / social) ===
       if (currentActiveFile && currentActiveFile.processedBlob) {
+        const actualKb = (currentActiveFile.processedBlob.size / 1024).toFixed(1);
         batchEngine.downloadSingle(currentActiveFile.id, ext, currentActiveFile.processedBlob);
+        showToast(`✅ Downloaded! Size: ${actualKb} KB`, 'success');
       } else if (activeImageObj) {
         const canvas = ImageProcessor.processImage(activeImageObj, currentOptions);
-        ImageProcessor.canvasToBlob(canvas, currentOptions.format, currentOptions.quality).then(blob => {
-          BatchEngine.triggerBlobDownload(blob, `sizesu_download.${ext}`);
-        });
+        const blob = await ImageProcessor.canvasToBlob(canvas, currentOptions.format, currentOptions.quality);
+        const actualKb = (blob.size / 1024).toFixed(1);
+        BatchEngine.triggerBlobDownload(blob, `${filename}_sizesu.${ext}`);
+        showToast(`✅ Downloaded! Size: ${actualKb} KB`, 'success');
       } else {
         showToast('Please upload an image first!', 'error');
       }

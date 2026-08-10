@@ -90,50 +90,69 @@ class ImageProcessor {
    */
   static async compressToTargetKb(img, targetKb, format = 'image/jpeg', options = {}) {
     const targetBytes = targetKb * 1024;
-    let minQuality = 0.05;
+    // Allow up to 2% tolerance above target (browser encoding is not exact)
+    const toleranceBytes = targetBytes * 1.02;
+
+    let minQuality = 0.02;
     let maxQuality = 1.0;
     let bestBlob = null;
 
     let currentWidth = options.width || img.naturalWidth || img.width;
     let currentHeight = options.height || img.naturalHeight || img.height;
 
-    // Outer loop: reduce scale if 5% quality is still larger than target KB
-    for (let scaleAttempt = 0; scaleAttempt < 5; scaleAttempt++) {
+    // PNG cannot be quality-compressed — convert to JPEG for target KB
+    const compressFormat = (format === 'image/png') ? 'image/jpeg' : format;
+
+    // Outer loop: scale down dimensions if quality alone cannot reach target
+    for (let scaleAttempt = 0; scaleAttempt < 8; scaleAttempt++) {
       const scaledCanvas = ImageProcessor.processImage(img, {
         ...options,
         width: Math.round(currentWidth),
         height: Math.round(currentHeight)
       });
 
-      // Binary search for optimal JPEG/WEBP quality
-      minQuality = 0.05;
+      // Reset binary search bounds for each scale attempt
+      minQuality = 0.02;
       maxQuality = 1.0;
+      let iterBest = null;
 
-      for (let i = 0; i < 7; i++) {
+      // Binary search with 12 iterations for tight precision
+      for (let i = 0; i < 12; i++) {
         const midQuality = (minQuality + maxQuality) / 2;
-        const blob = await ImageProcessor.canvasToBlob(scaledCanvas, format, midQuality);
+        const blob = await ImageProcessor.canvasToBlob(scaledCanvas, compressFormat, midQuality);
 
-        if (blob.size <= targetBytes) {
+        if (blob.size <= toleranceBytes) {
+          iterBest = blob;
           bestBlob = blob;
-          minQuality = midQuality; // Try to get higher quality within KB limit
+          minQuality = midQuality; // Try higher quality within limit
         } else {
-          maxQuality = midQuality; // Size too big, reduce quality
+          maxQuality = midQuality; // Too large — reduce quality
+        }
+
+        // Early exit: if within 98-100% of target, perfect match found
+        if (iterBest && iterBest.size >= targetBytes * 0.90 && iterBest.size <= toleranceBytes) {
+          break;
         }
       }
 
-      if (bestBlob && bestBlob.size <= targetBytes) {
-        break; // Successfully achieved target KB!
+      // Successfully hit target — stop scaling
+      if (bestBlob && bestBlob.size <= toleranceBytes) {
+        break;
       }
 
-      // If even lowest quality is larger than target bytes, scale down dimensions by 15%
+      // Reduce dimensions by 15% and try again
       currentWidth *= 0.85;
       currentHeight *= 0.85;
     }
 
-    // Fallback if target KB is extremely aggressive
+    // Final fallback: use absolute minimum quality at smallest scale
     if (!bestBlob) {
-      const finalCanvas = ImageProcessor.processImage(img, { ...options, width: currentWidth, height: currentHeight });
-      bestBlob = await ImageProcessor.canvasToBlob(finalCanvas, format, 0.05);
+      const finalCanvas = ImageProcessor.processImage(img, {
+        ...options,
+        width: Math.max(Math.round(currentWidth), 50),
+        height: Math.max(Math.round(currentHeight), 50)
+      });
+      bestBlob = await ImageProcessor.canvasToBlob(finalCanvas, compressFormat, 0.02);
     }
 
     return bestBlob;
