@@ -211,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
           if (toolHashMap[activeTab] && !window.location.hash.includes(activeTab)) {
             window.history.replaceState(null, '', `#${toolHashMap[activeTab]}`);
+            window.dispatchEvent(new Event('hashchange'));
           }
 
           handleToolSwitch();
