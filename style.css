@@ -1298,7 +1298,13 @@ body {
 @media (max-width: 768px) { 
   .adsense-top-banner { display: none; } 
 }
-.adsense-skyscraper-left { 
+.adsense-skyscraper-left, .adsense-skyscraper-right {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  display: none; z-index: 99;
+}
+.adsense-skyscraper-left { left: 1rem; width: 160px; height: 600px; }
+.adsense-skyscraper-right { right: 1rem; width: 360px; height: 800px; }
+/* replaced 
   position: fixed; top: 50%; left: 1rem; transform: translateY(-50%); 
   width: 160px; height: 600px; display: none; z-index: 99; 
 }
