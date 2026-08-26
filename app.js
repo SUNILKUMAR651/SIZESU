@@ -175,10 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Paste listener (Ctrl+V)
     window.addEventListener('paste', (e) => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+      if (!items) return;
       const pastedFiles = [];
       for (let item of items) {
-        if (item.type.indexOf('image') === 0) pastedFiles.push(item.getAsFile());
+        if (item.type && item.type.indexOf('image') === 0) pastedFiles.push(item.getAsFile());
       }
       if (pastedFiles.length > 0) {
         handleFilesSelect(pastedFiles);
@@ -197,6 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
           document.querySelectorAll('.tool-panel').forEach(p => p.style.display = 'none');
           const activePanel = document.getElementById(`panel_${activeTab}`);
           if (activePanel) activePanel.style.display = 'block';
+
+          // Sync active sidebar links
+          document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+          const sidebarLink = document.querySelector(`.sidebar-link[data-tool="${activeTab}"]`);
+          if (sidebarLink) sidebarLink.classList.add('active');
 
           const toolHashMap = {
             'resize': 'tool/resize-image-to-50kb',
@@ -219,46 +225,88 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Sidebar & Mobile Nav Logic
+    // Sidebar & Mobile/Desktop Drawer Logic
     const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const desktopSidebarBtn = document.getElementById('desktopSidebarBtn');
     const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
     const mobileSidebar = document.getElementById('mobileSidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
     function toggleSidebar(show) {
       if (!mobileSidebar || !sidebarOverlay) return;
-      if(show) {
+      if (show) {
         mobileSidebar.classList.add('open');
         sidebarOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
       } else {
         mobileSidebar.classList.remove('open');
         sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
       }
     }
 
-    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', () => toggleSidebar(true));
+    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSidebar(true);
+    });
+    if (desktopSidebarBtn) desktopSidebarBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSidebar(true);
+    });
     if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', () => toggleSidebar(false));
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+
+    // Keyboard ESC listener
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        toggleSidebar(false);
+        const searchModal = document.getElementById('searchModal');
+        if (searchModal) searchModal.style.display = 'none';
+      }
+    });
 
     // Nav and Sidebar Tool Links Logic
     document.querySelectorAll('.nav-tool-link').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetTool = link.dataset.tool;
-        if(toolNav) {
+        if (toolNav) {
           const targetBtn = toolNav.querySelector(`.tool-tab[data-tool="${targetTool}"]`);
-          if(targetBtn) targetBtn.click(); // Reuse existing logic
+          if (targetBtn) targetBtn.click(); // Reuse existing logic
         }
-        toggleSidebar(false); // Close sidebar if open
+        toggleSidebar(false); // Close sidebar smoothly
         
         // Highlight active sidebar link
         document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-        if(link.classList.contains('sidebar-link')) {
-          link.classList.add('active');
-        } else {
-          // If clicked from navbar, highlight in sidebar too
-          const sidebarLink = document.querySelector(`.sidebar-link[data-tool="${targetTool}"]`);
-          if(sidebarLink) sidebarLink.classList.add('active');
+        const matchedSidebarLinks = document.querySelectorAll(`.sidebar-link[data-tool="${targetTool}"]`);
+        matchedSidebarLinks.forEach(l => l.classList.add('active'));
+
+        // Handle focus/scroll depending on tool type
+        if (targetTool === 'qr' || targetTool === 'pdf') {
+          if (workspaceArea) workspaceArea.style.display = 'grid';
+          const targetEl = document.getElementById(`panel_${targetTool}`) || workspaceArea;
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (!activeImageObj && dropzone) {
+          dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          dropzone.classList.add('pulse-highlight');
+          setTimeout(() => dropzone.classList.remove('pulse-highlight'), 1200);
+        } else if (workspaceArea) {
+          workspaceArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // General Sidebar Links (Blog, FAQ, etc.)
+    document.querySelectorAll('.sidebar-link:not(.nav-tool-link)').forEach(link => {
+      link.addEventListener('click', (e) => {
+        toggleSidebar(false);
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          const target = document.querySelector(href);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
       });
     });
@@ -291,6 +339,11 @@ document.addEventListener('DOMContentLoaded', () => {
           document.querySelectorAll('.tool-panel').forEach(p => p.style.display = 'none');
           const activePanel = document.getElementById(`panel_${activeTab}`);
           if (activePanel) activePanel.style.display = 'block';
+
+          // Sync active sidebar links
+          document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+          const sidebarLink = document.querySelector(`.sidebar-link[data-tool="${activeTab}"]`);
+          if (sidebarLink) sidebarLink.classList.add('active');
 
           handleToolSwitch();
         }
@@ -376,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
       passportPresetSelect.addEventListener('change', () => {
         const selected = SIZESU_PRESETS.passport.find(p => p.id === passportPresetSelect.value);
         if (selected) {
-          const dpi = parseInt(dpiSelect.value, 10) || 300;
+          const dpi = parseInt(dpiSelect ? dpiSelect.value : 300, 10) || 300;
           currentOptions.width = mmToPx(selected.widthMm, dpi);
           currentOptions.height = mmToPx(selected.heightMm, dpi);
           currentOptions.targetKb = selected.maxKb;
@@ -734,39 +787,22 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // QR Code Generator Trigger
+    // QR Code Generator Trigger & Live Preview
     if (generateQrBtn) {
       generateQrBtn.addEventListener('click', () => {
-        const text = qrTextInput ? qrTextInput.value.trim() || 'https://sizesu.app' : 'https://sizesu.app';
-        const fgColor = qrFgColorInput ? qrFgColorInput.value : '#000000';
-        const bgColor = qrBgColorInput ? qrBgColorInput.value : '#ffffff';
-        const qrCanvas = document.createElement('canvas');
-        new QRious({
-          element: qrCanvas,
-          value: text,
-          background: bgColor,
-          foreground: fgColor,
-          size: 512,
-          level: 'H',
-          padding: 10
-        });
-
-        qrCanvas.toBlob(blob => {
-          if (previewImg) previewImg.src = URL.createObjectURL(blob);
-          if (currentActiveFile) {
-            currentActiveFile.processedBlob = blob;
-          }
-          BatchEngine.triggerBlobDownload(blob, 'sizesu_qr_code.png');
-          showToast('Camera-scannable QR Code downloaded!', 'success');
-        }, 'image/png');
+        renderQrPreview(true);
       });
     }
 
+    if (qrTextInput) qrTextInput.addEventListener('input', () => renderQrPreview(false));
+    if (qrFgColorInput) qrFgColorInput.addEventListener('input', () => renderQrPreview(false));
+    if (qrBgColorInput) qrBgColorInput.addEventListener('input', () => renderQrPreview(false));
+
     // Universal Download Single Button
     const performDownloadCurrent = async () => {
-      // If user clicks the main download button while in the QR tab, just generate and download the QR.
+      // If user clicks the main download button while in the QR tab, generate and download QR
       if (activeTab === 'qr') {
-        if (generateQrBtn) generateQrBtn.click();
+        renderQrPreview(true);
         return;
       }
       
@@ -854,6 +890,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function renderQrPreview(autoDownload = false) {
+    const text = qrTextInput ? qrTextInput.value.trim() || 'https://sizesu.app' : 'https://sizesu.app';
+    const fgColor = qrFgColorInput ? qrFgColorInput.value : '#000000';
+    const bgColor = qrBgColorInput ? qrBgColorInput.value : '#ffffff';
+    
+    try {
+      if (typeof QREngine === 'undefined') {
+        console.error('QREngine is not defined');
+        return;
+      }
+
+      const qrCanvas = QREngine.generateQRCodeCanvas(text, {
+        size: 512,
+        fgColor: fgColor,
+        bgColor: bgColor,
+        margin: 4
+      });
+
+      qrCanvas.toBlob(blob => {
+        if (!blob) return;
+        if (lastPreviewObjectUrl) {
+          URL.revokeObjectURL(lastPreviewObjectUrl);
+        }
+        lastPreviewObjectUrl = URL.createObjectURL(blob);
+
+        if (previewImg) {
+          previewImg.src = lastPreviewObjectUrl;
+          previewImg.style.display = 'block';
+        }
+        if (newDimBadge) newDimBadge.textContent = '512 x 512 px';
+        if (newSizeBadge) newSizeBadge.textContent = formatBytes(blob.size);
+
+        if (currentActiveFile) {
+          currentActiveFile.processedBlob = blob;
+          currentActiveFile.processedSize = blob.size;
+        }
+
+        if (autoDownload) {
+          BatchEngine.triggerBlobDownload(blob, 'sizesu_qr_code.png');
+          showToast('Camera-scannable QR Code downloaded!', 'success');
+        }
+      }, 'image/png');
+    } catch (err) {
+      console.error('QR Generator Error:', err);
+      if (autoDownload) showToast('Failed to generate QR code', 'error');
+    }
+  }
+
   function bindSearchModalEvents() {
     const searchModal = document.getElementById('searchModal');
     const searchCloseBtn = document.getElementById('searchCloseBtn');
@@ -935,198 +1019,8 @@ document.addEventListener('DOMContentLoaded', () => {
       workspaceArea.style.display = 'grid';
     }
 
-    if (cropEngine) {
-      cropEngine.destroy();
-      cropEngine = null;
-    }
-
-    if (activeTab === 'crop' && previewCanvasContainer && previewImg && activeImageObj) {
-      cropEngine = new CropEngine(previewCanvasContainer, previewImg, { aspectRatio: aspectRatioValue });
-    } else {
-      triggerRealtimeRender();
-    }
-  }
-
-  function onDimensionChange(changedAxis) {
-    let w = parseInt(inputWidth.value, 10);
-    let h = parseInt(inputHeight.value, 10);
-
-    if (isNaN(w) || w <= 0 || isNaN(h) || h <= 0) return;
-
-    if (isAspectLocked && aspectRatioValue) {
-      if (changedAxis === 'width' && w > 0) {
-        h = Math.round(w / aspectRatioValue);
-        if (inputHeight) inputHeight.value = h;
-      } else if (changedAxis === 'height' && h > 0) {
-        w = Math.round(h * aspectRatioValue);
-        if (inputWidth) inputWidth.value = w;
-      }
-    }
-
-    currentOptions.width = w;
-    currentOptions.height = h;
-    debouncedRender();
-  }
-
-  function updateDimensionFromUnit() {
-    if (!activeImageObj || !unitSelect) return;
-    const unit = unitSelect.value;
-    const dpi = parseInt(dpiSelect ? dpiSelect.value : 300, 10) || 300;
-
-    if (unit === 'cm') {
-      if (inputWidth) inputWidth.value = pxToCm(currentOptions.width, dpi);
-      if (inputHeight) inputHeight.value = pxToCm(currentOptions.height, dpi);
-    } else if (unit === 'mm') {
-      if (inputWidth) inputWidth.value = pxToMm(currentOptions.width, dpi);
-      if (inputHeight) inputHeight.value = pxToMm(currentOptions.height, dpi);
-    } else if (unit === 'inch') {
-      if (inputWidth) inputWidth.value = pxToInch(currentOptions.width, dpi);
-      if (inputHeight) inputHeight.value = pxToInch(currentOptions.height, dpi);
-    } else {
-      if (inputWidth) inputWidth.value = currentOptions.width;
-      if (inputHeight) inputHeight.value = currentOptions.height;
-    }
-  }
-
-  function debouncedRender() {
-    if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
-    renderDebounceTimer = setTimeout(() => {
-      triggerRealtimeRender();
-    }, 50);
-  }
-
-  async function triggerRealtimeRender() {
-    if (!activeImageObj || !currentActiveFile) return;
-
-    let finalCanvas;
-    if (activeTab === 'crop' && cropEngine) {
-      finalCanvas = cropEngine.getCroppedCanvas(activeImageObj.naturalWidth, activeImageObj.naturalHeight);
-    } else {
-      finalCanvas = ImageProcessor.processImage(activeImageObj, currentOptions);
-    }
-
-    let resultBlob;
-    if (currentOptions.targetKb > 0) {
-      resultBlob = await ImageProcessor.compressToTargetKb(activeImageObj, currentOptions.targetKb, currentOptions.format, currentOptions);
-    } else {
-      resultBlob = await ImageProcessor.canvasToBlob(finalCanvas, currentOptions.format, currentOptions.quality);
-    }
-
-    currentActiveFile.processedBlob = resultBlob;
-    currentActiveFile.processedSize = resultBlob.size;
-
-    // Revoke previous object URL to prevent memory leaks
-    if (lastPreviewObjectUrl) {
-      URL.revokeObjectURL(lastPreviewObjectUrl);
-    }
-    lastPreviewObjectUrl = URL.createObjectURL(resultBlob);
-
-    if (previewImg) previewImg.src = lastPreviewObjectUrl;
-    if (newDimBadge) {
-      if (currentOptions.targetKb > 0 && resultBlob.finalWidth && resultBlob.finalHeight) {
-        newDimBadge.textContent = `${resultBlob.finalWidth} x ${resultBlob.finalHeight} px`;
-      } else {
-        newDimBadge.textContent = `${finalCanvas.width} x ${finalCanvas.height} px`;
-      }
-    }
-    if (newSizeBadge) newSizeBadge.textContent = formatBytes(resultBlob.size);
-  }
-
-  function generatePassportGridSheet() {
-    if (!activeImageObj) return;
-    const passportCanvas = ImageProcessor.processImage(activeImageObj, currentOptions);
-    const sheetCanvas = ImageProcessor.createPassportPrintSheet(passportCanvas, { dpi: 300, rows: 2, cols: 4 });
-
-    sheetCanvas.toBlob(blob => {
-      BatchEngine.triggerBlobDownload(blob, `sizesu_passport_print_sheet_4x6.jpg`);
-    }, 'image/jpeg', 0.95);
-  }
-
-  function renderBatchGrid() {
-    const batchGrid = document.getElementById('batchGrid');
-    if (!batchGrid) return;
-
-    batchGrid.innerHTML = '';
-    batchEngine.files.forEach(item => {
-      const card = document.createElement('div');
-      card.className = `batch-item-card ${item.id === (currentActiveFile && currentActiveFile.id) ? 'active' : ''}`;
-      const sizeDiff = item.processedSize ? formatBytes(item.processedSize) : formatBytes(item.originalSize);
-
-      card.innerHTML = `
-        <button class="batch-item-remove" data-id="${item.id}">✕</button>
-        <img class="batch-item-thumb" src="${item.previewUrl}" alt="${item.name}">
-        <div class="batch-item-name">${item.name}</div>
-        <div class="batch-item-meta">
-          <span>Orig: ${formatBytes(item.originalSize)}</span>
-          <span style="color:var(--accent-emerald); font-weight:700;">${sizeDiff}</span>
-        </div>
-      `;
-
-      card.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('batch-item-remove')) {
-          setActiveImage(item);
-          renderBatchGrid();
-        }
-      });
-
-      card.querySelector('.batch-item-remove').addEventListener('click', (e) => {
-        e.stopPropagation();
-        batchEngine.removeFile(item.id);
-        renderBatchGrid();
-        if (batchEngine.files.length === 0 && workspaceArea) workspaceArea.style.display = 'none';
-        else if (currentActiveFile && currentActiveFile.id === item.id && batchEngine.files.length > 0) setActiveImage(batchEngine.files[0]);
-      });
-
-      batchGrid.appendChild(card);
-    });
-  }
-
-  window.showToast = function(msg, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `<span>${msg}</span>`;
-
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  };
-
-  // Initialize SEO Router after all event listeners are attached
-  let seoRouter;
-  try {
-    seoRouter = new SEORouter();
-    seoRouter.init();
-  } catch (e) {
-    console.warn('SEORouter init notice:', e);
-  }
-
-  // --- Pi7 Style UI Logic ---
-  const pi7Overlay = document.getElementById('pi7Overlay');
-  const pi7Filename = document.getElementById('pi7Filename');
-  const pi7Size = document.getElementById('pi7Size');
-  const pi7Width = document.getElementById('pi7Width');
-  const pi7Height = document.getElementById('pi7Height');
-  const pi7ResizeBtn = document.getElementById('pi7ResizeBtn');
-  const pi7CropBtn = document.getElementById('pi7CropBtn');
-  
-  if (pi7ResizeBtn) {
-    pi7ResizeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const resizeTab = document.querySelector('.tool-tab[data-tool="resize"]');
-      if (resizeTab) resizeTab.click();
-    });
-  }
-      debouncedRender();
-    } catch (err) {
-      showToast('Failed to load selected image', 'error');
-    }
-  }
-
-  function handleToolSwitch() {
-    if ((activeTab === 'qr' || activeTab === 'pdf') && workspaceArea) {
-      workspaceArea.style.display = 'grid';
+    if (activeTab === 'qr') {
+      renderQrPreview(false);
     }
 
     if (cropEngine) {
@@ -1136,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (activeTab === 'crop' && previewCanvasContainer && previewImg && activeImageObj) {
       cropEngine = new CropEngine(previewCanvasContainer, previewImg, { aspectRatio: aspectRatioValue });
-    } else {
+    } else if (activeImageObj) {
       triggerRealtimeRender();
     }
   }

@@ -80,6 +80,12 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
 
+      <!-- All Tools Drawer Button (Desktop & Tablet) -->
+      <button class="nav-link desktop-menu-btn" id="desktopSidebarBtn" style="display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:var(--text-main); padding:0.4rem 0.8rem; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600;" title="Open All Tools Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span class="hide-mobile">All Tools</span>
+      </button>
+
       <!-- Hamburger Menu for Mobile -->
       <button class="hamburger-btn" id="sidebarToggleBtn" aria-label="Open Menu">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -90,30 +96,71 @@
   <!-- Mobile Sidebar Overlay -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- Mobile Sidebar -->
-  <aside class="mobile-sidebar" id="mobileSidebar">
+  <!-- Mobile & Desktop Tools Drawer Sidebar -->
+  <aside class="mobile-sidebar" id="mobileSidebar" aria-label="Tools Navigation Sidebar">
     <div class="sidebar-header">
       <div class="brand">
         <div class="brand-icon">S</div>
-        <span class="brand-title">SIZESU</span>
+        <div>
+          <span class="brand-title">SIZESU</span>
+          <span class="brand-badge">PRO SUITE</span>
+        </div>
       </div>
-      <button class="close-sidebar-btn" id="sidebarCloseBtn">&times;</button>
+      <button class="close-sidebar-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">&times;</button>
     </div>
     <div class="sidebar-content">
-      <h4 class="sidebar-heading">Our Tools</h4>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="resize">Resize & Scale</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="compress">Compress to Exact KB</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="passport">Passport Photo Maker</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="ai">AI Background Remover</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="pdf">Image to PDF</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="qr">QR Code Generator</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="social">Social Media Presets</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="crop">Crop, Flip & Rotate</a>
-      <a href="#" class="sidebar-link nav-tool-link" data-tool="convert">Format Converter</a>
+      <h4 class="sidebar-heading">Core Image Tools</h4>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="resize">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        <span>Resize & Scale</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="compress">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        <span>Compress to Exact KB</span>
+        <span class="sidebar-badge hot">HOT</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="passport">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Passport Photo Maker</span>
+        <span class="sidebar-badge govt">GOVT</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="crop">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+        <span>Crop, Flip & Rotate</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="convert">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Format Converter</span>
+      </a>
+
+      <h4 class="sidebar-heading" style="margin-top: 1.25rem;">AI & PDF Utilities</h4>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="ai">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/></svg>
+        <span>AI Background Remover</span>
+        <span class="sidebar-badge ai">AI</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="pdf">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>Image to PDF Suite</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="qr">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>QR Code Generator</span>
+      </a>
+      <a href="#" class="sidebar-link nav-tool-link" data-tool="social">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        <span>Social Media Presets</span>
+      </a>
       
-      <h4 class="sidebar-heading" style="margin-top: 1.5rem;">Explore</h4>
-      <a href="#blog" class="sidebar-link">Blog Guide</a>
-      <a href="#faq" class="sidebar-link">FAQ</a>
+      <h4 class="sidebar-heading" style="margin-top: 1.25rem;">Guides & Resources</h4>
+      <a href="#blog" class="sidebar-link">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Blog & Exam Guides</span>
+      </a>
+      <a href="#faq" class="sidebar-link">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>FAQ & Help</span>
+      </a>
     </div>
   </aside>
 
@@ -132,6 +179,37 @@
         <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Exact Target KB Solver</span>
         <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> AI Background Removal</span>
         <span class="badge-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Image to PDF Converter</span>
+      </div>
+    </section>
+
+    <!-- Top Advertisement Banner Section -->
+    <section class="ads-top-section" style="margin: 1.25rem auto 2.25rem auto; text-align: center; max-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
+      <div class="ad-label" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); opacity: 0.75;">Advertisement</div>
+      
+      <!-- Top Responsive Google AdSense Banner -->
+      <div class="ad-container top-ad-container" style="width: 100%; max-width: 970px; min-height: 90px; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 0.5rem 0;">
+        <ins class="adsbygoogle"
+             style="display:block; min-width: 300px; width: 100%;"
+             data-ad-client="ca-pub-7012138429520024"
+             data-ad-slot="9509963089"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+
+      <!-- HighPerformanceFormat Top 728x90 Banner -->
+      <div class="ad-container top-ad-iframe" style="width: 100%; display: flex; justify-content: center; overflow: hidden;">
+        <script type="text/javascript">
+          window.atOptions = window.atOptions || {};
+          window.atOptions['key'] = 'ee0f26f23ec8a46c1f5ec9356e82868b';
+          window.atOptions['format'] = 'iframe';
+          window.atOptions['height'] = 90;
+          window.atOptions['width'] = 728;
+          window.atOptions['params'] = {};
+        </script>
+        <script type="text/javascript" src="https://www.highperformanceformat.com/ee0f26f23ec8a46c1f5ec9356e82868b/invoke.js"></script>
       </div>
     </section>
 
