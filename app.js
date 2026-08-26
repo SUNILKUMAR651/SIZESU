@@ -5,9 +5,13 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Register PWA Service Worker
+  // Clear any obsolete service workers to prevent stale JS caching
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration notice:', err));
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let reg of registrations) {
+        reg.unregister();
+      }
+    });
   }
 
   // Engine & Queue instances
@@ -109,6 +113,62 @@ document.addEventListener('DOMContentLoaded', () => {
     backgroundColor: null,
     watermark: null
   };
+
+  let currentQrState = window.currentQrState = {
+    type: 'youtube',
+    logo: 'youtube',
+    theme: 'youtube',
+    fgColor: '#FF0000',
+    fgColor2: null,
+    gradientType: 'none',
+    bgColor: '#ffffff',
+    customLogoImg: null
+  };
+
+  const getQrPayload = window.getQrPayload = () => {
+    const type = currentQrState.type;
+    if (type === 'whatsapp') {
+      const phone = (document.getElementById('qrWaPhoneInput')?.value || '').trim().replace(/[^0-9+]/g, '');
+      const msg = encodeURIComponent(document.getElementById('qrWaMsgInput')?.value || '');
+      if (!phone) return 'https://wa.me/';
+      return msg ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/${phone}`;
+    }
+    if (type === 'wifi') {
+      const ssid = (document.getElementById('qrWifiSsid')?.value || 'MyHomeWiFi').trim();
+      const pass = document.getElementById('qrWifiPass')?.value || '';
+      const enc = document.getElementById('qrWifiType')?.value || 'WPA';
+      return `WIFI:S:${ssid};T:${enc};P:${pass};;`;
+    }
+    if (type === 'upi') {
+      const vpa = (document.getElementById('qrUpiId')?.value || 'merchant@upi').trim();
+      const name = encodeURIComponent(document.getElementById('qrUpiName')?.value || 'SIZESU Store');
+      const amount = document.getElementById('qrUpiAmount')?.value || '';
+      let upiUrl = `upi://pay?pa=${vpa}&pn=${name}&cu=INR`;
+      if (amount) upiUrl += `&am=${amount}`;
+      return upiUrl;
+    }
+    if (type === 'instagram') {
+      let val = (qrTextInput?.value || '').trim();
+      if (!val) return 'https://instagram.com';
+      if (!val.startsWith('http://') && !val.startsWith('https://')) {
+        val = `https://instagram.com/${val.replace('@', '')}`;
+      }
+      return val;
+    }
+    return (qrTextInput?.value || '').trim() || 'https://www.youtube.com/';
+  };
+
+  function handleToolSwitch() {
+    if ((activeTab === 'qr' || activeTab === 'pdf') && workspaceArea) {
+      workspaceArea.style.display = 'grid';
+      if (previewCanvasContainer) previewCanvasContainer.style.display = 'flex';
+      if (previewImg) previewImg.style.display = 'block';
+    }
+
+    if (activeTab === 'qr') {
+      renderQrPreview(false);
+    }
+  }
 
   // --- INITIALIZATION ---
   initTheme();
@@ -787,51 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // QR Code Generator Suite Controller
-    let currentQrState = {
-      type: 'youtube',
-      logo: 'youtube',
-      theme: 'youtube',
-      fgColor: '#FF0000',
-      fgColor2: null,
-      gradientType: 'none',
-      bgColor: '#ffffff',
-      customLogoImg: null
-    };
-
-    const getQrPayload = () => {
-      const type = currentQrState.type;
-      if (type === 'whatsapp') {
-        const phone = (document.getElementById('qrWaPhoneInput')?.value || '').trim().replace(/[^0-9+]/g, '');
-        const msg = encodeURIComponent(document.getElementById('qrWaMsgInput')?.value || '');
-        if (!phone) return 'https://wa.me/';
-        return msg ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/${phone}`;
-      }
-      if (type === 'wifi') {
-        const ssid = (document.getElementById('qrWifiSsid')?.value || 'MyHomeWiFi').trim();
-        const pass = document.getElementById('qrWifiPass')?.value || '';
-        const enc = document.getElementById('qrWifiType')?.value || 'WPA';
-        return `WIFI:S:${ssid};T:${enc};P:${pass};;`;
-      }
-      if (type === 'upi') {
-        const vpa = (document.getElementById('qrUpiId')?.value || 'merchant@upi').trim();
-        const name = encodeURIComponent(document.getElementById('qrUpiName')?.value || 'SIZESU Store');
-        const amount = document.getElementById('qrUpiAmount')?.value || '';
-        let upiUrl = `upi://pay?pa=${vpa}&pn=${name}&cu=INR`;
-        if (amount) upiUrl += `&am=${amount}`;
-        return upiUrl;
-      }
-      if (type === 'instagram') {
-        let val = (qrTextInput?.value || '').trim();
-        if (!val) return 'https://instagram.com';
-        if (!val.startsWith('http://') && !val.startsWith('https://')) {
-          val = `https://instagram.com/${val.replace('@', '')}`;
-        }
-        return val;
-      }
-      return (qrTextInput?.value || '').trim() || 'https://www.youtube.com/';
-    };
-
+    // QR Code Generator Suite Controller Bindings
     // QR Type Pills Switching
     document.querySelectorAll('#qrTypePills .pill-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1121,18 +1137,30 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderQrPreview(autoDownload = false, isSvg = false) {
-    const text = typeof getQrPayload === 'function' ? getQrPayload() : (qrTextInput ? qrTextInput.value.trim() || 'https://www.youtube.com/' : 'https://www.youtube.com/');
+    window.renderQrPreview = renderQrPreview;
+    const state = (typeof window !== 'undefined' && window.currentQrState) ? window.currentQrState : (typeof currentQrState !== 'undefined' ? currentQrState : {
+      type: 'youtube',
+      logo: 'youtube',
+      theme: 'youtube',
+      fgColor: '#FF0000',
+      fgColor2: null,
+      gradientType: 'none',
+      bgColor: '#ffffff',
+      customLogoImg: null
+    });
+
+    const text = typeof getQrPayload === 'function' ? getQrPayload() : (typeof window !== 'undefined' && window.getQrPayload ? window.getQrPayload() : (qrTextInput ? qrTextInput.value.trim() || 'https://www.youtube.com/' : 'https://www.youtube.com/'));
     const resolution = parseInt(document.getElementById('qrResolutionSelect')?.value || 512, 10);
     const dotStyle = document.getElementById('qrDotStyleSelect')?.value || 'square';
     const eyeStyle = document.getElementById('qrEyeStyleSelect')?.value || 'square';
 
-    let logoToUse = currentQrState.logo === 'custom' ? currentQrState.customLogoImg : (currentQrState.logo === 'none' ? null : currentQrState.logo);
+    let logoToUse = state.logo === 'custom' ? state.customLogoImg : (state.logo === 'none' ? null : state.logo);
 
     if (isSvg && autoDownload) {
       try {
         const svgContent = QREngine.generateQRCodeSVG(text, {
-          fgColor: currentQrState.fgColor,
-          bgColor: currentQrState.bgColor,
+          fgColor: state.fgColor,
+          bgColor: state.bgColor,
           margin: 4,
           ecl: logoToUse ? 'H' : 'M'
         });
@@ -1154,16 +1182,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const qrCanvas = QREngine.generateQRCodeCanvas(text, {
         size: resolution,
-        fgColor: currentQrState.fgColor,
-        fgColor2: currentQrState.fgColor2,
-        gradientType: currentQrState.gradientType,
-        bgColor: currentQrState.bgColor,
+        fgColor: state.fgColor,
+        fgColor2: state.fgColor2,
+        gradientType: state.gradientType,
+        bgColor: state.bgColor,
         margin: 4,
         dotStyle: dotStyle,
         eyeStyle: eyeStyle,
         logo: logoToUse,
         logoSize: 0.22,
-        logoBg: currentQrState.bgColor === 'transparent' ? '#ffffff' : currentQrState.bgColor
+        logoBg: state.bgColor === 'transparent' ? '#ffffff' : state.bgColor
       });
 
       qrCanvas.toBlob(blob => {
@@ -1173,6 +1201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         lastPreviewObjectUrl = URL.createObjectURL(blob);
 
+        if (workspaceArea) workspaceArea.style.display = 'grid';
+        if (previewCanvasContainer) previewCanvasContainer.style.display = 'flex';
         if (previewImg) {
           previewImg.src = lastPreviewObjectUrl;
           previewImg.style.display = 'block';
