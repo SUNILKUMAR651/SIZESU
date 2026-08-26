@@ -1,0 +1,18 @@
+{
+  "name": "sizesu-app",
+  "version": "2.0.0",
+  "description": "SIZESU - Online Image Resizer, Target KB Compressor, PDF Suite & High-Speed QR Code Generator",
+  "scripts": {
+    "dev": "npx -y serve . -l 8080",
+    "start": "npx -y serve . -l 8080",
+    "serve": "npx -y serve . -l 8080"
+  },
+  "keywords": [
+    "image-resizer",
+    "compress-image-to-20kb",
+    "passport-photo-maker",
+    "qr-code-generator"
+  ],
+  "author": "SIZESU Team",
+  "license": "MIT"
+}

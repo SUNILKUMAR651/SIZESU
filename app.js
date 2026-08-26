@@ -787,22 +787,252 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // QR Code Generator Trigger & Live Preview
-    if (generateQrBtn) {
-      generateQrBtn.addEventListener('click', () => {
-        renderQrPreview(true);
+    // QR Code Generator Suite Controller
+    let currentQrState = {
+      type: 'youtube',
+      logo: 'youtube',
+      theme: 'youtube',
+      fgColor: '#FF0000',
+      fgColor2: null,
+      gradientType: 'none',
+      bgColor: '#ffffff',
+      customLogoImg: null
+    };
+
+    const getQrPayload = () => {
+      const type = currentQrState.type;
+      if (type === 'whatsapp') {
+        const phone = (document.getElementById('qrWaPhoneInput')?.value || '').trim().replace(/[^0-9+]/g, '');
+        const msg = encodeURIComponent(document.getElementById('qrWaMsgInput')?.value || '');
+        if (!phone) return 'https://wa.me/';
+        return msg ? `https://wa.me/${phone}?text=${msg}` : `https://wa.me/${phone}`;
+      }
+      if (type === 'wifi') {
+        const ssid = (document.getElementById('qrWifiSsid')?.value || 'MyHomeWiFi').trim();
+        const pass = document.getElementById('qrWifiPass')?.value || '';
+        const enc = document.getElementById('qrWifiType')?.value || 'WPA';
+        return `WIFI:S:${ssid};T:${enc};P:${pass};;`;
+      }
+      if (type === 'upi') {
+        const vpa = (document.getElementById('qrUpiId')?.value || 'merchant@upi').trim();
+        const name = encodeURIComponent(document.getElementById('qrUpiName')?.value || 'SIZESU Store');
+        const amount = document.getElementById('qrUpiAmount')?.value || '';
+        let upiUrl = `upi://pay?pa=${vpa}&pn=${name}&cu=INR`;
+        if (amount) upiUrl += `&am=${amount}`;
+        return upiUrl;
+      }
+      if (type === 'instagram') {
+        let val = (qrTextInput?.value || '').trim();
+        if (!val) return 'https://instagram.com';
+        if (!val.startsWith('http://') && !val.startsWith('https://')) {
+          val = `https://instagram.com/${val.replace('@', '')}`;
+        }
+        return val;
+      }
+      return (qrTextInput?.value || '').trim() || 'https://www.youtube.com/';
+    };
+
+    // QR Type Pills Switching
+    document.querySelectorAll('#qrTypePills .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#qrTypePills .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const type = btn.dataset.qrtype;
+        currentQrState.type = type;
+
+        const mainGroup = document.getElementById('qrInputGroup_main');
+        const waGroup = document.getElementById('qrInputGroup_whatsapp');
+        const wifiGroup = document.getElementById('qrInputGroup_wifi');
+        const upiGroup = document.getElementById('qrInputGroup_upi');
+        const label = document.getElementById('qrTextLabel');
+
+        if (mainGroup) mainGroup.style.display = (type === 'whatsapp' || type === 'wifi' || type === 'upi') ? 'none' : 'block';
+        if (waGroup) waGroup.style.display = type === 'whatsapp' ? 'block' : 'none';
+        if (wifiGroup) wifiGroup.style.display = type === 'wifi' ? 'block' : 'none';
+        if (upiGroup) upiGroup.style.display = type === 'upi' ? 'block' : 'none';
+
+        if (type === 'youtube') {
+          if (label) label.textContent = 'YouTube Video / Channel URL';
+          if (qrTextInput) {
+            qrTextInput.placeholder = 'https://www.youtube.com/@channel or https://youtu.be/...';
+            if (!qrTextInput.value || qrTextInput.value.includes('sizesu.app')) qrTextInput.value = 'https://www.youtube.com/';
+          }
+          const ytThemeBtn = document.querySelector('#qrThemePills .pill-btn[data-theme="youtube"]');
+          if (ytThemeBtn) ytThemeBtn.click();
+          const ytLogoBtn = document.querySelector('#qrLogoPills .pill-btn[data-logo="youtube"]');
+          if (ytLogoBtn) ytLogoBtn.click();
+        } else if (type === 'url') {
+          if (label) label.textContent = 'Website URL';
+          if (qrTextInput) {
+            qrTextInput.placeholder = 'https://example.com';
+            if (!qrTextInput.value || qrTextInput.value.includes('youtube')) qrTextInput.value = 'https://sizesu.app';
+          }
+          const classicTheme = document.querySelector('#qrThemePills .pill-btn[data-theme="classic"]');
+          if (classicTheme) classicTheme.click();
+          const globeLogo = document.querySelector('#qrLogoPills .pill-btn[data-logo="globe"]');
+          if (globeLogo) globeLogo.click();
+        } else if (type === 'whatsapp') {
+          const emeraldTheme = document.querySelector('#qrThemePills .pill-btn[data-theme="emerald"]');
+          if (emeraldTheme) emeraldTheme.click();
+          const waLogo = document.querySelector('#qrLogoPills .pill-btn[data-logo="whatsapp"]');
+          if (waLogo) waLogo.click();
+        } else if (type === 'instagram') {
+          if (label) label.textContent = 'Instagram Profile or Post URL';
+          if (qrTextInput) qrTextInput.placeholder = 'https://instagram.com/username or @username';
+          const instaTheme = document.querySelector('#qrThemePills .pill-btn[data-theme="instagram"]');
+          if (instaTheme) instaTheme.click();
+          const instaLogo = document.querySelector('#qrLogoPills .pill-btn[data-logo="instagram"]');
+          if (instaLogo) instaLogo.click();
+        } else if (type === 'text') {
+          if (label) label.textContent = 'Plain Text Content';
+          if (qrTextInput) qrTextInput.placeholder = 'Type any text message or notes...';
+        }
+
+        renderQrPreview(false);
+      });
+    });
+
+    // Logo Pills Switching
+    const customLogoInput = document.getElementById('qrCustomLogoInput');
+    document.querySelectorAll('#qrLogoPills .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#qrLogoPills .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const logo = btn.dataset.logo;
+        currentQrState.logo = logo;
+
+        if (logo === 'custom') {
+          if (customLogoInput) {
+            customLogoInput.style.display = 'block';
+            customLogoInput.click();
+          }
+        } else {
+          if (customLogoInput) customLogoInput.style.display = 'none';
+        }
+        renderQrPreview(false);
+      });
+    });
+
+    if (customLogoInput) {
+      customLogoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+              currentQrState.customLogoImg = img;
+              renderQrPreview(false);
+              showToast('Custom logo applied to QR code!', 'info');
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
       });
     }
 
-    if (qrTextInput) qrTextInput.addEventListener('input', () => renderQrPreview(false));
-    if (qrFgColorInput) qrFgColorInput.addEventListener('input', () => renderQrPreview(false));
-    if (qrBgColorInput) qrBgColorInput.addEventListener('input', () => renderQrPreview(false));
+    // Theme Pills Switching
+    document.querySelectorAll('#qrThemePills .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#qrThemePills .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const theme = btn.dataset.theme;
+        currentQrState.theme = theme;
+
+        if (theme === 'youtube') {
+          currentQrState.fgColor = '#FF0000';
+          currentQrState.fgColor2 = null;
+          currentQrState.gradientType = 'none';
+          currentQrState.bgColor = '#ffffff';
+        } else if (theme === 'classic') {
+          currentQrState.fgColor = '#000000';
+          currentQrState.fgColor2 = null;
+          currentQrState.gradientType = 'none';
+          currentQrState.bgColor = '#ffffff';
+        } else if (theme === 'instagram') {
+          currentQrState.fgColor = '#833ab4';
+          currentQrState.fgColor2 = '#fd1d1d';
+          currentQrState.gradientType = 'linear';
+          currentQrState.bgColor = '#ffffff';
+        } else if (theme === 'neon') {
+          currentQrState.fgColor = '#06b6d4';
+          currentQrState.fgColor2 = '#8b5cf6';
+          currentQrState.gradientType = 'linear';
+          currentQrState.bgColor = '#0f172a';
+        } else if (theme === 'emerald') {
+          currentQrState.fgColor = '#059669';
+          currentQrState.fgColor2 = null;
+          currentQrState.gradientType = 'none';
+          currentQrState.bgColor = '#ffffff';
+        } else if (theme === 'dark') {
+          currentQrState.fgColor = '#ffffff';
+          currentQrState.fgColor2 = null;
+          currentQrState.gradientType = 'none';
+          currentQrState.bgColor = '#121212';
+        }
+
+        if (qrFgColorInput) qrFgColorInput.value = currentQrState.fgColor.startsWith('#') ? currentQrState.fgColor : '#000000';
+        if (qrBgColorInput) qrBgColorInput.value = currentQrState.bgColor.startsWith('#') ? currentQrState.bgColor : '#ffffff';
+
+        renderQrPreview(false);
+      });
+    });
+
+    // Custom Color Pickers
+    if (qrFgColorInput) {
+      qrFgColorInput.addEventListener('input', () => {
+        currentQrState.fgColor = qrFgColorInput.value;
+        currentQrState.fgColor2 = null;
+        currentQrState.gradientType = 'none';
+        renderQrPreview(false);
+      });
+    }
+    if (qrBgColorInput) {
+      qrBgColorInput.addEventListener('input', () => {
+        currentQrState.bgColor = qrBgColorInput.value;
+        renderQrPreview(false);
+      });
+    }
+
+    // Dot Style & Eye Style Selects
+    const qrDotStyleSelect = document.getElementById('qrDotStyleSelect');
+    const qrEyeStyleSelect = document.getElementById('qrEyeStyleSelect');
+    const qrResolutionSelect = document.getElementById('qrResolutionSelect');
+
+    if (qrDotStyleSelect) qrDotStyleSelect.addEventListener('change', () => renderQrPreview(false));
+    if (qrEyeStyleSelect) qrEyeStyleSelect.addEventListener('change', () => renderQrPreview(false));
+    if (qrResolutionSelect) qrResolutionSelect.addEventListener('change', () => renderQrPreview(false));
+
+    // Dynamic Input Change Listeners for live real-time rendering
+    ['qrTextInput', 'qrWaPhoneInput', 'qrWaMsgInput', 'qrWifiSsid', 'qrWifiPass', 'qrWifiType', 'qrUpiId', 'qrUpiName', 'qrUpiAmount'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => renderQrPreview(false));
+        el.addEventListener('change', () => renderQrPreview(false));
+      }
+    });
+
+    // PNG Download Button
+    if (generateQrBtn) {
+      generateQrBtn.addEventListener('click', () => {
+        renderQrPreview(true, false);
+      });
+    }
+
+    // SVG Vector Download Button
+    const downloadQrSvgBtn = document.getElementById('downloadQrSvgBtn');
+    if (downloadQrSvgBtn) {
+      downloadQrSvgBtn.addEventListener('click', () => {
+        renderQrPreview(true, true);
+      });
+    }
 
     // Universal Download Single Button
     const performDownloadCurrent = async () => {
       // If user clicks the main download button while in the QR tab, generate and download QR
       if (activeTab === 'qr') {
-        renderQrPreview(true);
+        renderQrPreview(true, false);
         return;
       }
       
@@ -890,11 +1120,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function renderQrPreview(autoDownload = false) {
-    const text = qrTextInput ? qrTextInput.value.trim() || 'https://sizesu.app' : 'https://sizesu.app';
-    const fgColor = qrFgColorInput ? qrFgColorInput.value : '#000000';
-    const bgColor = qrBgColorInput ? qrBgColorInput.value : '#ffffff';
-    
+  function renderQrPreview(autoDownload = false, isSvg = false) {
+    const text = typeof getQrPayload === 'function' ? getQrPayload() : (qrTextInput ? qrTextInput.value.trim() || 'https://www.youtube.com/' : 'https://www.youtube.com/');
+    const resolution = parseInt(document.getElementById('qrResolutionSelect')?.value || 512, 10);
+    const dotStyle = document.getElementById('qrDotStyleSelect')?.value || 'square';
+    const eyeStyle = document.getElementById('qrEyeStyleSelect')?.value || 'square';
+
+    let logoToUse = currentQrState.logo === 'custom' ? currentQrState.customLogoImg : (currentQrState.logo === 'none' ? null : currentQrState.logo);
+
+    if (isSvg && autoDownload) {
+      try {
+        const svgContent = QREngine.generateQRCodeSVG(text, {
+          fgColor: currentQrState.fgColor,
+          bgColor: currentQrState.bgColor,
+          margin: 4,
+          ecl: logoToUse ? 'H' : 'M'
+        });
+        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+        BatchEngine.triggerBlobDownload(blob, 'sizesu_qr_code.svg');
+        showToast('Downloaded scalable vector SVG QR Code!', 'success');
+      } catch (err) {
+        console.error('SVG Export Error:', err);
+        showToast('Failed to export SVG QR Code', 'error');
+      }
+      return;
+    }
+
     try {
       if (typeof QREngine === 'undefined') {
         console.error('QREngine is not defined');
@@ -902,10 +1153,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const qrCanvas = QREngine.generateQRCodeCanvas(text, {
-        size: 512,
-        fgColor: fgColor,
-        bgColor: bgColor,
-        margin: 4
+        size: resolution,
+        fgColor: currentQrState.fgColor,
+        fgColor2: currentQrState.fgColor2,
+        gradientType: currentQrState.gradientType,
+        bgColor: currentQrState.bgColor,
+        margin: 4,
+        dotStyle: dotStyle,
+        eyeStyle: eyeStyle,
+        logo: logoToUse,
+        logoSize: 0.22,
+        logoBg: currentQrState.bgColor === 'transparent' ? '#ffffff' : currentQrState.bgColor
       });
 
       qrCanvas.toBlob(blob => {
@@ -919,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
           previewImg.src = lastPreviewObjectUrl;
           previewImg.style.display = 'block';
         }
-        if (newDimBadge) newDimBadge.textContent = '512 x 512 px';
+        if (newDimBadge) newDimBadge.textContent = `${resolution} x ${resolution} px`;
         if (newSizeBadge) newSizeBadge.textContent = formatBytes(blob.size);
 
         if (currentActiveFile) {
@@ -928,8 +1186,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (autoDownload) {
-          BatchEngine.triggerBlobDownload(blob, 'sizesu_qr_code.png');
-          showToast('Camera-scannable QR Code downloaded!', 'success');
+          BatchEngine.triggerBlobDownload(blob, `sizesu_qr_code_${resolution}px.png`);
+          showToast(`Camera-scannable ${resolution}px HD QR Code downloaded!`, 'success');
         }
       }, 'image/png');
     } catch (err) {
