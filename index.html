@@ -22,8 +22,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="tools.css">
+  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="tools.css?v=8">
 
   <!-- External Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
@@ -227,6 +227,70 @@
           Select Images
         </button>
         <input type="file" id="fileInput" class="file-input-hidden" multiple accept="image/*">
+      </div>
+    </div>
+
+    <!-- Pi7 Style Master Workspace (Shown when image is uploaded) -->
+    <div class="pi7-workspace-wrapper" id="pi7Workspace" style="display: none;">
+      <div class="pi7-main-frame">
+        <!-- Top Dimension Unit Quick Switchers -->
+        <div class="pi7-dimensions-header">
+          <span class="pi7-dim-label">Image Dimensions:-</span>
+          <button class="pi7-dim-btn active" data-unit="px" id="pi7DimPxBtn">Pixels</button>
+          <button class="pi7-dim-btn" data-unit="mm" id="pi7DimMmBtn">MM</button>
+          <button class="pi7-dim-btn" data-unit="cm" id="pi7DimCmBtn">CM</button>
+        </div>
+
+        <!-- Center Uploaded Image Card -->
+        <div class="pi7-card" id="pi7UploadedCard">
+          <div class="pi7-card-badges-left">
+            <button class="pi7-card-badge-btn" id="pi7CardResizeBtn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+              Resize Pixel
+            </button>
+            <button class="pi7-card-badge-btn" id="pi7CardCropBtn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+              Crop
+            </button>
+          </div>
+          <button class="pi7-card-close-btn" id="pi7CardCloseBtn" title="Remove this image">✕</button>
+
+          <div class="pi7-card-img-wrap">
+            <img id="pi7ThumbnailImg" class="pi7-card-img" src="" alt="Uploaded image thumbnail">
+          </div>
+
+          <div class="pi7-card-meta">
+            <div class="pi7-meta-filename" id="pi7CardFilename">image.jpeg</div>
+            <div class="pi7-meta-row">Size:- <span id="pi7CardSize">0 KB</span></div>
+            <div class="pi7-meta-row">Width:- <span id="pi7CardWidth">0 PX</span></div>
+            <div class="pi7-meta-row">Height:- <span id="pi7CardHeight">0 PX</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Reduce Size Bar -->
+      <div class="pi7-reduce-bar">
+        <label class="pi7-size-label">Size:</label>
+        <input type="number" id="pi7TargetKbInput" class="pi7-size-input" value="100" min="1">
+        <select id="pi7TargetUnitSelect" class="pi7-unit-select">
+          <option value="KB" selected>KB</option>
+          <option value="MB">MB</option>
+        </select>
+        <button class="pi7-btn-reduce" id="pi7ReduceBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          Reduce Size
+        </button>
+      </div>
+
+      <!-- Quick Presets Row -->
+      <div class="pi7-presets-row" id="pi7PresetPills">
+        <button class="pill-btn" data-targetkb="10">10 KB</button>
+        <button class="pill-btn" data-targetkb="20">20 KB</button>
+        <button class="pill-btn" data-targetkb="50">50 KB</button>
+        <button class="pill-btn active" data-targetkb="100">100 KB</button>
+        <button class="pill-btn" data-targetkb="200">200 KB</button>
+        <button class="pill-btn" data-targetkb="500">500 KB</button>
+        <button class="pill-btn" data-targetkb="1024">1 MB</button>
       </div>
     </div>
 
@@ -931,6 +995,110 @@
     </div>
   </footer>
 
+  <!-- ==================== PI7 RESIZE IMAGE MODAL ==================== -->
+  <div class="pi7-modal-overlay" id="pi7ResizeModal" style="display: none;">
+    <div class="pi7-modal-card">
+      <button class="pi7-modal-close-red" id="pi7ResizeModalCloseBtn">✕</button>
+
+      <!-- Unit Tabs -->
+      <div class="pi7-modal-tabs">
+        <span class="pi7-modal-tab-label">Resize Image In</span>
+        <button class="pi7-modal-tab-btn active" data-modalunit="px" id="pi7ModalTabPx">Pixels</button>
+        <button class="pi7-modal-tab-btn" data-modalunit="mm" id="pi7ModalTabMm">MM (Millimeter)</button>
+        <button class="pi7-modal-tab-btn" data-modalunit="cm" id="pi7ModalTabCm">CM (Centimetre)</button>
+        <button class="pi7-modal-tab-btn" data-modalunit="inch" id="pi7ModalTabInch">Inches</button>
+      </div>
+
+      <!-- Preview Box -->
+      <div class="pi7-modal-preview-box">
+        <img id="pi7ResizeModalImg" class="pi7-modal-preview-img" src="" alt="Resize Modal Preview">
+      </div>
+
+      <p class="pi7-modal-instruction">Please enter the width and height of the image you wish to resize</p>
+
+      <!-- Aspect Ratio Checkbox -->
+      <div class="pi7-modal-checkbox-row">
+        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          <input type="checkbox" id="pi7MaintainAspectCheckbox" checked style="width:16px; height:16px; cursor:pointer;">
+          Maintain Aspect Ratio
+        </label>
+      </div>
+
+      <!-- Dynamic Dimension Inputs -->
+      <div class="pi7-modal-inputs-row">
+        <!-- DPI Input (for MM, CM, Inch) -->
+        <div class="pi7-input-group" id="pi7DpiGroup" style="display: none;">
+          <input type="number" id="pi7ModalDpi" class="pi7-input-val" value="300" min="72" max="1200">
+          <span class="pi7-input-addon dpi">DPI</span>
+        </div>
+
+        <!-- Width Input -->
+        <div class="pi7-input-group">
+          <label style="margin-right: 0.4rem; font-weight: 700; font-size: 0.9rem; align-self: center;">Width:</label>
+          <input type="number" id="pi7ModalWidth" class="pi7-input-val" value="512" step="any">
+          <span class="pi7-input-addon" id="pi7WidthUnitTag">PX</span>
+        </div>
+
+        <!-- Height Input -->
+        <div class="pi7-input-group">
+          <label style="margin-right: 0.4rem; font-weight: 700; font-size: 0.9rem; align-self: center;">Height:</label>
+          <input type="number" id="pi7ModalHeight" class="pi7-input-val" value="512" step="any">
+          <span class="pi7-input-addon" id="pi7HeightUnitTag">PX</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pi7-modal-btn-row">
+        <button class="pi7-btn-submit" id="pi7ModalApplyResizeBtn">Resize Image</button>
+        <button class="pi7-btn-cancel" id="pi7ModalCancelResizeBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PI7 CROP & ROTATE MODAL ==================== -->
+  <div class="pi7-modal-overlay" id="pi7CropModal" style="display: none;">
+    <div class="pi7-modal-card" style="max-width: 720px;">
+      <button class="pi7-modal-close-red" id="pi7CropModalCloseBtn">✕</button>
+
+      <div class="pi7-modal-tabs">
+        <span class="pi7-modal-tab-label">Crop Aspect Ratio:</span>
+        <button class="pi7-modal-tab-btn active" data-cropratio="free">Freeform</button>
+        <button class="pi7-modal-tab-btn" data-cropratio="1">1:1 Square</button>
+        <button class="pi7-modal-tab-btn" data-cropratio="0.777">3.5:4.5 Passport</button>
+        <button class="pi7-modal-tab-btn" data-cropratio="1.333">4:3 Standard</button>
+        <button class="pi7-modal-tab-btn" data-cropratio="1.777">16:9 HD</button>
+      </div>
+
+      <!-- Interactive Crop Viewport -->
+      <div class="pi7-crop-viewport" id="pi7CropViewport">
+        <img id="pi7CropModalImg" src="" alt="Crop Modal Preview" style="max-width: 100%; max-height: 100%; display: block;">
+      </div>
+
+      <!-- Sliders -->
+      <div class="pi7-slider-container">
+        <div class="pi7-slider-title">Rotate Image By Moving Slider</div>
+        <div class="pi7-slider-wrap">
+          <input type="range" id="pi7RotateSlider" min="-180" max="180" value="0" style="flex:1;">
+          <button class="pi7-reset-icon-btn" id="pi7ResetRotateBtn" title="Reset Rotation">⊘</button>
+        </div>
+      </div>
+
+      <div class="pi7-slider-container">
+        <div class="pi7-slider-title">Zoom In Image By Moving Slider</div>
+        <div class="pi7-slider-wrap">
+          <input type="range" id="pi7ZoomSlider" min="1" max="3" step="0.05" value="1" style="flex:1;">
+          <button class="pi7-reset-icon-btn" id="pi7ResetZoomBtn" title="Reset Zoom">⊘</button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pi7-modal-btn-row" style="margin-top: 1.25rem;">
+        <button class="pi7-btn-submit" id="pi7ModalApplyCropBtn">Crop Image</button>
+        <button class="pi7-btn-cancel" id="pi7ModalCancelCropBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Universal Search Modal (Ctrl+K) -->
   <div class="modal-overlay" id="searchModal" style="display: none;">
     <div class="modal-content">
@@ -961,17 +1129,17 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Script Imports -->
-  <script src="presetData.js?v=6"></script>
-  <script src="imageProcessor.js?v=6"></script>
-  <script src="cropEngine.js?v=6"></script>
-  <script src="batchEngine.js?v=6"></script>
-  <script src="aiEngine.js?v=6"></script>
-  <script src="pdfEngine.js?v=6"></script>
-  <script src="qrcode.min.js?v=6"></script>
-  <script src="qrEngine.js?v=6"></script>
-  <script src="seoData.js?v=6"></script>
-  <script src="seoRouter.js?v=6"></script>
-  <script src="blogEngine.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="presetData.js?v=8"></script>
+  <script src="imageProcessor.js?v=8"></script>
+  <script src="cropEngine.js?v=8"></script>
+  <script src="batchEngine.js?v=8"></script>
+  <script src="aiEngine.js?v=8"></script>
+  <script src="pdfEngine.js?v=8"></script>
+  <script src="qrcode.min.js?v=8"></script>
+  <script src="qrEngine.js?v=8"></script>
+  <script src="seoData.js?v=8"></script>
+  <script src="seoRouter.js?v=8"></script>
+  <script src="blogEngine.js?v=8"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

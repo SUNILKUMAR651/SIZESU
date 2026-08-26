@@ -145,3 +145,505 @@
     max-height: 250px;
   }
 }
+
+/* ==========================================================================
+   Pi7 Image Tool Style Workspace, Card & Interactive Modals
+   ========================================================================== */
+
+.pi7-workspace-wrapper {
+  margin: 1.5rem auto;
+  max-width: 900px;
+  width: 100%;
+}
+
+.pi7-main-frame {
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  background: var(--bg-surface);
+  padding: 2.5rem 1.5rem 2rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+}
+
+.pi7-dimensions-header {
+  position: absolute;
+  top: -14px;
+  right: 18px;
+  background: var(--bg-surface);
+  padding: 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.pi7-dim-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pi7-dim-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pi7-dim-btn:hover, .pi7-dim-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Uploaded Image Card */
+.pi7-card {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.pi7-card-badges-left {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 5;
+}
+
+.pi7-card-badge-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.pi7-card-badge-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.pi7-card-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: all 0.2s;
+}
+
+.pi7-card-close-btn:hover {
+  background: #ef4444;
+  transform: rotate(90deg) scale(1.1);
+}
+
+.pi7-card-img-wrap {
+  width: 100%;
+  height: 180px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.5rem;
+}
+
+.pi7-card-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.pi7-card-meta {
+  background: #2563eb;
+  color: #ffffff;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.pi7-meta-filename {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pi7-meta-row {
+  font-size: 0.78rem;
+  opacity: 0.95;
+}
+
+/* Reduce Size Action Bar */
+.pi7-reduce-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.pi7-size-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.pi7-size-input {
+  width: 90px;
+  height: 42px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.pi7-unit-select {
+  height: 42px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0 0.6rem;
+  cursor: pointer;
+}
+
+.pi7-btn-reduce {
+  background: #3b5998;
+  color: #ffffff;
+  border: none;
+  height: 42px;
+  padding: 0 1.5rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.3);
+  transition: all 0.2s ease;
+}
+
+.pi7-btn-reduce:hover {
+  background: #2d4373;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59, 89, 152, 0.4);
+}
+
+.pi7-presets-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   Pi7 Resize & Crop Modal Popups
+   ========================================================================== */
+
+.pi7-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.pi7-modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 620px;
+  padding: 1.75rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  max-height: 92vh;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.pi7-modal-close-red {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #e11d48;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.pi7-modal-close-red:hover {
+  background: #be123c;
+  transform: scale(1.08);
+}
+
+.pi7-modal-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  padding-right: 35px;
+}
+
+.pi7-modal-tab-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.pi7-modal-tab-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pi7-modal-tab-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.pi7-modal-preview-box {
+  width: 100%;
+  height: 240px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+}
+
+.pi7-modal-preview-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.pi7-modal-instruction {
+  font-size: 0.88rem;
+  color: #3b82f6;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.pi7-modal-checkbox-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 1.25rem;
+}
+
+.pi7-modal-inputs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.pi7-input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pi7-input-val {
+  width: 80px;
+  height: 38px;
+  border: none;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0 0.4rem;
+}
+
+.pi7-input-addon {
+  background: #3b5998;
+  color: #ffffff;
+  padding: 0 0.65rem;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pi7-input-addon.dpi {
+  background: #0d9488;
+}
+
+.pi7-modal-btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+.pi7-btn-submit {
+  background: #3b5998;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.75rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(59, 89, 152, 0.25);
+  transition: all 0.2s;
+}
+
+.pi7-btn-submit:hover {
+  background: #2d4373;
+  transform: translateY(-1px);
+}
+
+.pi7-btn-cancel {
+  background: #e11d48;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pi7-btn-cancel:hover {
+  background: #be123c;
+}
+
+/* Crop Viewport & Sliders */
+.pi7-crop-viewport {
+  width: 100%;
+  height: 280px;
+  background: #1e293b url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23334155'><rect width='8' height='8'/><rect x='8' y='8' width='8' height='8'/></svg>") repeat;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.pi7-slider-container {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.pi7-slider-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 0.4rem;
+}
+
+.pi7-slider-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.pi7-reset-icon-btn {
+  background: none;
+  border: none;
+  color: #e11d48;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

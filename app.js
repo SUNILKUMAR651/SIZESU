@@ -175,6 +175,25 @@ document.addEventListener('DOMContentLoaded', () => {
   populatePresets();
   bindEvents();
   bindSearchModalEvents();
+  bindPi7WorkspaceEvents();
+
+  // Test helper: auto-load sample image if URL param ?test=upload is present
+  if (window.location.search.includes('test=upload')) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(0, 0, 512, 512);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SIZESU DEMO', 256, 256);
+    canvas.toBlob((blob) => {
+      const file = new File([blob], 'sizesu_sample_photo.jpeg', { type: 'image/jpeg' });
+      handleFilesSelect([file]);
+    }, 'image/jpeg');
+  }
 
   function initTheme() {
     const savedTheme = localStorage.getItem('sizesu_theme') || 'dark';
@@ -1276,7 +1295,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const added = batchEngine.addFiles(fileList);
     if (added.length === 0) return;
 
-    if (workspaceArea) workspaceArea.style.display = 'grid';
+    if (dropzone) dropzone.style.display = 'none';
+    const pi7Workspace = document.getElementById('pi7Workspace');
+    if (pi7Workspace) pi7Workspace.style.display = 'block';
+
     renderBatchGrid();
     setActiveImage(added[0]);
     showToast(`Loaded ${added.length} image(s)`, 'success');
@@ -1290,6 +1312,19 @@ document.addEventListener('DOMContentLoaded', () => {
       currentOptions.height = activeImageObj.naturalHeight;
       aspectRatioValue = currentOptions.width / currentOptions.height;
 
+      // Update Pi7 Uploaded Card UI
+      const pi7ThumbnailImg = document.getElementById('pi7ThumbnailImg');
+      const pi7CardFilename = document.getElementById('pi7CardFilename');
+      const pi7CardSize = document.getElementById('pi7CardSize');
+      const pi7CardWidth = document.getElementById('pi7CardWidth');
+      const pi7CardHeight = document.getElementById('pi7CardHeight');
+
+      if (pi7ThumbnailImg) pi7ThumbnailImg.src = item.previewUrl;
+      if (pi7CardFilename) pi7CardFilename.textContent = item.name;
+      if (pi7CardSize) pi7CardSize.textContent = formatBytes(item.originalSize);
+      if (pi7CardWidth) pi7CardWidth.textContent = `${activeImageObj.naturalWidth} PX`;
+      if (pi7CardHeight) pi7CardHeight.textContent = `${activeImageObj.naturalHeight} PX`;
+
       if (inputWidth) inputWidth.value = currentOptions.width;
       if (inputHeight) inputHeight.value = currentOptions.height;
 
@@ -1299,6 +1334,402 @@ document.addEventListener('DOMContentLoaded', () => {
       debouncedRender();
     } catch (err) {
       showToast('Failed to load selected image', 'error');
+    }
+  }
+
+  // --- PI7 WORKSPACE & INTERACTIVE MODALS CONTROLLER ---
+  function bindPi7WorkspaceEvents() {
+    const pi7Workspace = document.getElementById('pi7Workspace');
+    const pi7CardResizeBtn = document.getElementById('pi7CardResizeBtn');
+    const pi7CardCropBtn = document.getElementById('pi7CardCropBtn');
+    const pi7CardCloseBtn = document.getElementById('pi7CardCloseBtn');
+    const pi7DimPxBtn = document.getElementById('pi7DimPxBtn');
+    const pi7DimMmBtn = document.getElementById('pi7DimMmBtn');
+    const pi7DimCmBtn = document.getElementById('pi7DimCmBtn');
+    const pi7ReduceBtn = document.getElementById('pi7ReduceBtn');
+    const pi7TargetKbInput = document.getElementById('pi7TargetKbInput');
+    const pi7TargetUnitSelect = document.getElementById('pi7TargetUnitSelect');
+
+    // Modals
+    const pi7ResizeModal = document.getElementById('pi7ResizeModal');
+    const pi7ResizeModalCloseBtn = document.getElementById('pi7ResizeModalCloseBtn');
+    const pi7ResizeModalImg = document.getElementById('pi7ResizeModalImg');
+    const pi7MaintainAspectCheckbox = document.getElementById('pi7MaintainAspectCheckbox');
+    const pi7ModalWidth = document.getElementById('pi7ModalWidth');
+    const pi7ModalHeight = document.getElementById('pi7ModalHeight');
+    const pi7ModalDpi = document.getElementById('pi7ModalDpi');
+    const pi7DpiGroup = document.getElementById('pi7DpiGroup');
+    const pi7WidthUnitTag = document.getElementById('pi7WidthUnitTag');
+    const pi7HeightUnitTag = document.getElementById('pi7HeightUnitTag');
+    const pi7ModalApplyResizeBtn = document.getElementById('pi7ModalApplyResizeBtn');
+    const pi7ModalCancelResizeBtn = document.getElementById('pi7ModalCancelResizeBtn');
+
+    const pi7CropModal = document.getElementById('pi7CropModal');
+    const pi7CropModalCloseBtn = document.getElementById('pi7CropModalCloseBtn');
+    const pi7CropModalImg = document.getElementById('pi7CropModalImg');
+    const pi7CropViewport = document.getElementById('pi7CropViewport');
+    const pi7RotateSlider = document.getElementById('pi7RotateSlider');
+    const pi7ResetRotateBtn = document.getElementById('pi7ResetRotateBtn');
+    const pi7ZoomSlider = document.getElementById('pi7ZoomSlider');
+    const pi7ResetZoomBtn = document.getElementById('pi7ResetZoomBtn');
+    const pi7ModalApplyCropBtn = document.getElementById('pi7ModalApplyCropBtn');
+    const pi7ModalCancelCropBtn = document.getElementById('pi7ModalCancelCropBtn');
+
+    let currentModalUnit = 'px'; // 'px', 'mm', 'cm', 'inch'
+    let modalCropEngine = null;
+    let modalCropRotation = 0;
+    let modalCropZoom = 1;
+
+    // Dimension calculations helper
+    const updateModalDimensionInputs = () => {
+      if (!activeImageObj) return;
+      const curW = currentOptions.width || activeImageObj.naturalWidth;
+      const curH = currentOptions.height || activeImageObj.naturalHeight;
+      const dpi = parseFloat(pi7ModalDpi?.value || 300) || 300;
+
+      if (currentModalUnit === 'px') {
+        if (pi7DpiGroup) pi7DpiGroup.style.display = 'none';
+        if (pi7WidthUnitTag) pi7WidthUnitTag.textContent = 'PX';
+        if (pi7HeightUnitTag) pi7HeightUnitTag.textContent = 'PX';
+        if (pi7ModalWidth) pi7ModalWidth.value = Math.round(curW);
+        if (pi7ModalHeight) pi7ModalHeight.value = Math.round(curH);
+      } else if (currentModalUnit === 'mm') {
+        if (pi7DpiGroup) pi7DpiGroup.style.display = 'flex';
+        if (pi7WidthUnitTag) pi7WidthUnitTag.textContent = 'MM';
+        if (pi7HeightUnitTag) pi7HeightUnitTag.textContent = 'MM';
+        if (pi7ModalWidth) pi7ModalWidth.value = ((curW / dpi) * 25.4).toFixed(2);
+        if (pi7ModalHeight) pi7ModalHeight.value = ((curH / dpi) * 25.4).toFixed(2);
+      } else if (currentModalUnit === 'cm') {
+        if (pi7DpiGroup) pi7DpiGroup.style.display = 'flex';
+        if (pi7WidthUnitTag) pi7WidthUnitTag.textContent = 'CM';
+        if (pi7HeightUnitTag) pi7HeightUnitTag.textContent = 'CM';
+        if (pi7ModalWidth) pi7ModalWidth.value = ((curW / dpi) * 2.54).toFixed(2);
+        if (pi7ModalHeight) pi7ModalHeight.value = ((curH / dpi) * 2.54).toFixed(2);
+      } else if (currentModalUnit === 'inch') {
+        if (pi7DpiGroup) pi7DpiGroup.style.display = 'flex';
+        if (pi7WidthUnitTag) pi7WidthUnitTag.textContent = 'IN';
+        if (pi7HeightUnitTag) pi7HeightUnitTag.textContent = 'IN';
+        if (pi7ModalWidth) pi7ModalWidth.value = (curW / dpi).toFixed(2);
+        if (pi7ModalHeight) pi7ModalHeight.value = (curH / dpi).toFixed(2);
+      }
+    };
+
+    const openResizeModal = (unit = 'px') => {
+      if (!activeImageObj) {
+        showToast('Please upload an image first!', 'error');
+        return;
+      }
+      currentModalUnit = unit;
+      document.querySelectorAll('#pi7ResizeModal .pi7-modal-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.modalunit === unit);
+      });
+      if (pi7ResizeModalImg) pi7ResizeModalImg.src = activeImageObj.src;
+      updateModalDimensionInputs();
+      if (pi7ResizeModal) pi7ResizeModal.style.display = 'flex';
+    };
+
+    const closeResizeModal = () => {
+      if (pi7ResizeModal) pi7ResizeModal.style.display = 'none';
+    };
+
+    // Close button on Card (removes active image)
+    if (pi7CardCloseBtn) {
+      pi7CardCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentActiveFile = null;
+        activeImageObj = null;
+        if (pi7Workspace) pi7Workspace.style.display = 'none';
+        if (dropzone) dropzone.style.display = 'flex';
+        if (fileInput) fileInput.value = '';
+        showToast('Image cleared', 'info');
+      });
+    }
+
+    // Top Dimension buttons
+    if (pi7DimPxBtn) pi7DimPxBtn.addEventListener('click', () => openResizeModal('px'));
+    if (pi7DimMmBtn) pi7DimMmBtn.addEventListener('click', () => openResizeModal('mm'));
+    if (pi7DimCmBtn) pi7DimCmBtn.addEventListener('click', () => openResizeModal('cm'));
+
+    // Card Left buttons
+    if (pi7CardResizeBtn) pi7CardResizeBtn.addEventListener('click', () => openResizeModal('px'));
+    if (pi7CardCropBtn) pi7CardCropBtn.addEventListener('click', () => openCropModal());
+
+    // Resize Modal Tabs
+    document.querySelectorAll('#pi7ResizeModal .pi7-modal-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#pi7ResizeModal .pi7-modal-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentModalUnit = btn.dataset.modalunit;
+        updateModalDimensionInputs();
+      });
+    });
+
+    if (pi7ModalDpi) {
+      pi7ModalDpi.addEventListener('input', () => updateModalDimensionInputs());
+    }
+
+    // Maintain Aspect Ratio calculations in Modal
+    if (pi7ModalWidth) {
+      pi7ModalWidth.addEventListener('input', () => {
+        if (!pi7MaintainAspectCheckbox?.checked || !aspectRatioValue) return;
+        const wVal = parseFloat(pi7ModalWidth.value);
+        if (!isNaN(wVal) && wVal > 0) {
+          const hVal = wVal / aspectRatioValue;
+          if (pi7ModalHeight) pi7ModalHeight.value = currentModalUnit === 'px' ? Math.round(hVal) : hVal.toFixed(2);
+        }
+      });
+    }
+
+    if (pi7ModalHeight) {
+      pi7ModalHeight.addEventListener('input', () => {
+        if (!pi7MaintainAspectCheckbox?.checked || !aspectRatioValue) return;
+        const hVal = parseFloat(pi7ModalHeight.value);
+        if (!isNaN(hVal) && hVal > 0) {
+          const wVal = hVal * aspectRatioValue;
+          if (pi7ModalWidth) pi7ModalWidth.value = currentModalUnit === 'px' ? Math.round(wVal) : wVal.toFixed(2);
+        }
+      });
+    }
+
+    if (pi7ResizeModalCloseBtn) pi7ResizeModalCloseBtn.addEventListener('click', closeResizeModal);
+    if (pi7ModalCancelResizeBtn) pi7ModalCancelResizeBtn.addEventListener('click', closeResizeModal);
+
+    // Apply Resize from Modal
+    if (pi7ModalApplyResizeBtn) {
+      pi7ModalApplyResizeBtn.addEventListener('click', () => {
+        if (!activeImageObj) return;
+        const rawW = parseFloat(pi7ModalWidth?.value);
+        const rawH = parseFloat(pi7ModalHeight?.value);
+        const dpi = parseFloat(pi7ModalDpi?.value || 300) || 300;
+
+        let pxW = rawW;
+        let pxH = rawH;
+
+        if (currentModalUnit === 'mm') {
+          pxW = Math.round((rawW / 25.4) * dpi);
+          pxH = Math.round((rawH / 25.4) * dpi);
+        } else if (currentModalUnit === 'cm') {
+          pxW = Math.round((rawW / 2.54) * dpi);
+          pxH = Math.round((rawH / 2.54) * dpi);
+        } else if (currentModalUnit === 'inch') {
+          pxW = Math.round(rawW * dpi);
+          pxH = Math.round(rawH * dpi);
+        }
+
+        if (pxW > 0 && pxH > 0) {
+          currentOptions.width = pxW;
+          currentOptions.height = pxH;
+          aspectRatioValue = pxW / pxH;
+
+          // Update card stats
+          const pi7CardWidth = document.getElementById('pi7CardWidth');
+          const pi7CardHeight = document.getElementById('pi7CardHeight');
+          if (pi7CardWidth) pi7CardWidth.textContent = `${pxW} PX`;
+          if (pi7CardHeight) pi7CardHeight.textContent = `${pxH} PX`;
+
+          if (inputWidth) inputWidth.value = pxW;
+          if (inputHeight) inputHeight.value = pxH;
+
+          debouncedRender();
+          closeResizeModal();
+          showToast(`Image dimensions updated to ${pxW} x ${pxH} px!`, 'success');
+        }
+      });
+    }
+
+    // --- CROP MODAL ---
+    const openCropModal = () => {
+      if (!activeImageObj) {
+        showToast('Please upload an image first!', 'error');
+        return;
+      }
+      if (pi7CropModalImg) pi7CropModalImg.src = activeImageObj.src;
+      modalCropRotation = 0;
+      modalCropZoom = 1;
+      if (pi7RotateSlider) pi7RotateSlider.value = 0;
+      if (pi7ZoomSlider) pi7ZoomSlider.value = 1;
+
+      if (pi7CropModal) pi7CropModal.style.display = 'flex';
+
+      setTimeout(() => {
+        if (modalCropEngine) modalCropEngine.destroy();
+        modalCropEngine = new CropEngine(pi7CropViewport, pi7CropModalImg, { aspectRatio: null });
+      }, 50);
+    };
+
+    const closeCropModal = () => {
+      if (modalCropEngine) {
+        modalCropEngine.destroy();
+        modalCropEngine = null;
+      }
+      if (pi7CropModal) pi7CropModal.style.display = 'none';
+    };
+
+    if (pi7CropModalCloseBtn) pi7CropModalCloseBtn.addEventListener('click', closeCropModal);
+    if (pi7ModalCancelCropBtn) pi7ModalCancelCropBtn.addEventListener('click', closeCropModal);
+
+    // Crop Aspect Presets
+    document.querySelectorAll('#pi7CropModal .pi7-modal-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#pi7CropModal .pi7-modal-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const ratioStr = btn.dataset.cropratio;
+        const ratio = ratioStr === 'free' ? null : parseFloat(ratioStr);
+        if (modalCropEngine) modalCropEngine.setAspectRatio(ratio);
+      });
+    });
+
+    const applyCropTransform = () => {
+      if (pi7CropModalImg) {
+        pi7CropModalImg.style.transform = `rotate(${modalCropRotation}deg) scale(${modalCropZoom})`;
+      }
+    };
+
+    if (pi7RotateSlider) {
+      pi7RotateSlider.addEventListener('input', () => {
+        modalCropRotation = parseInt(pi7RotateSlider.value, 10);
+        applyCropTransform();
+      });
+    }
+    if (pi7ResetRotateBtn) {
+      pi7ResetRotateBtn.addEventListener('click', () => {
+        modalCropRotation = 0;
+        if (pi7RotateSlider) pi7RotateSlider.value = 0;
+        applyCropTransform();
+      });
+    }
+
+    if (pi7ZoomSlider) {
+      pi7ZoomSlider.addEventListener('input', () => {
+        modalCropZoom = parseFloat(pi7ZoomSlider.value);
+        applyCropTransform();
+      });
+    }
+    if (pi7ResetZoomBtn) {
+      pi7ResetZoomBtn.addEventListener('click', () => {
+        modalCropZoom = 1;
+        if (pi7ZoomSlider) pi7ZoomSlider.value = 1;
+        applyCropTransform();
+      });
+    }
+
+    // Apply Crop Button
+    if (pi7ModalApplyCropBtn) {
+      pi7ModalApplyCropBtn.addEventListener('click', async () => {
+        if (!modalCropEngine || !activeImageObj) return;
+        const cropRect = modalCropEngine.getCropRect(activeImageObj);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(cropRect.w));
+        canvas.height = Math.max(1, Math.round(cropRect.h));
+        const ctx = canvas.getContext('2d');
+
+        if (modalCropRotation !== 0) {
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate((modalCropRotation * Math.PI) / 180);
+          ctx.drawImage(
+            activeImageObj,
+            cropRect.x, cropRect.y, cropRect.w, cropRect.h,
+            -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height
+          );
+        } else {
+          ctx.drawImage(
+            activeImageObj,
+            cropRect.x, cropRect.y, cropRect.w, cropRect.h,
+            0, 0, canvas.width, canvas.height
+          );
+        }
+
+        const newBlob = await ImageProcessor.canvasToBlob(canvas, currentOptions.format || 'image/jpeg', 0.95);
+        const newUrl = URL.createObjectURL(newBlob);
+        activeImageObj = await ImageProcessor.loadImage(newUrl);
+
+        if (currentActiveFile) {
+          currentActiveFile.previewUrl = newUrl;
+          currentActiveFile.originalSize = newBlob.size;
+        }
+
+        currentOptions.width = activeImageObj.naturalWidth;
+        currentOptions.height = activeImageObj.naturalHeight;
+        aspectRatioValue = currentOptions.width / currentOptions.height;
+
+        const pi7ThumbnailImg = document.getElementById('pi7ThumbnailImg');
+        if (pi7ThumbnailImg) pi7ThumbnailImg.src = newUrl;
+
+        const pi7CardWidth = document.getElementById('pi7CardWidth');
+        const pi7CardHeight = document.getElementById('pi7CardHeight');
+        const pi7CardSize = document.getElementById('pi7CardSize');
+        if (pi7CardWidth) pi7CardWidth.textContent = `${activeImageObj.naturalWidth} PX`;
+        if (pi7CardHeight) pi7CardHeight.textContent = `${activeImageObj.naturalHeight} PX`;
+        if (pi7CardSize) pi7CardSize.textContent = formatBytes(newBlob.size);
+
+        debouncedRender();
+        closeCropModal();
+        showToast('Image cropped successfully!', 'success');
+      });
+    }
+
+    // Target KB Preset Pills
+    document.querySelectorAll('#pi7PresetPills .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#pi7PresetPills .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const kb = parseInt(btn.dataset.targetkb, 10);
+        if (pi7TargetKbInput) {
+          if (kb >= 1024) {
+            pi7TargetKbInput.value = kb / 1024;
+            if (pi7TargetUnitSelect) pi7TargetUnitSelect.value = 'MB';
+          } else {
+            pi7TargetKbInput.value = kb;
+            if (pi7TargetUnitSelect) pi7TargetUnitSelect.value = 'KB';
+          }
+        }
+      });
+    });
+
+    // Reduce Size Button Trigger
+    if (pi7ReduceBtn) {
+      pi7ReduceBtn.addEventListener('click', async () => {
+        if (!activeImageObj) {
+          showToast('Please upload an image first!', 'error');
+          return;
+        }
+
+        const rawVal = parseFloat(pi7TargetKbInput ? pi7TargetKbInput.value : 100) || 100;
+        const unit = pi7TargetUnitSelect ? pi7TargetUnitSelect.value : 'KB';
+        const targetKb = unit === 'MB' ? Math.round(rawVal * 1024) : Math.round(rawVal);
+
+        pi7ReduceBtn.textContent = '⏳ Compressing...';
+        showToast(`Compressing image to ${rawVal} ${unit}...`, 'info');
+
+        try {
+          const blob = await ImageProcessor.compressToTargetKb(
+            activeImageObj,
+            targetKb,
+            currentOptions.format || 'image/jpeg',
+            currentOptions
+          );
+
+          const actualKb = (blob.size / 1024).toFixed(1);
+          const ext = (currentOptions.format || 'image/jpeg').split('/')[1].replace('jpeg', 'jpg');
+          const baseName = currentActiveFile ? currentActiveFile.name.replace(/\.[^.]+$/, '') : 'sizesu_image';
+
+          BatchEngine.triggerBlobDownload(blob, `${baseName}_${targetKb}kb.${ext}`);
+
+          const pi7CardSize = document.getElementById('pi7CardSize');
+          if (pi7CardSize) pi7CardSize.textContent = `${actualKb} KB`;
+
+          showToast(`✅ Downloaded! Size: ${actualKb} KB (Target: ${targetKb} KB)`, 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Compression failed. Please try a slightly larger target KB.', 'error');
+        } finally {
+          pi7ReduceBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            Reduce Size
+          `;
+        }
+      });
     }
   }
 
