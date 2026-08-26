@@ -203,31 +203,52 @@ class CropEngine {
   }
 
   /**
-   * Get cropped canvas coordinates relative to actual natural image resolution
+   * Get cropped pixel coordinates relative to actual natural image resolution
    */
-  getCroppedCanvas(naturalWidth, naturalHeight) {
-    const imgRect = this.imgElement.getBoundingClientRect();
+  getCropRect(imgElement) {
+    const targetImg = imgElement || this.imgElement;
+    if (!targetImg || !this.container) {
+      return { x: 0, y: 0, w: 512, h: 512 };
+    }
+
+    const imgRect = targetImg.getBoundingClientRect();
     const containerRect = this.container.getBoundingClientRect();
+
+    const naturalWidth = targetImg.naturalWidth || targetImg.width || imgRect.width;
+    const naturalHeight = targetImg.naturalHeight || targetImg.height || imgRect.height;
 
     const imgX = imgRect.left - containerRect.left;
     const imgY = imgRect.top - containerRect.top;
 
-    const scaleX = naturalWidth / imgRect.width;
-    const scaleY = naturalHeight / imgRect.height;
+    const scaleX = naturalWidth / Math.max(1, imgRect.width);
+    const scaleY = naturalHeight / Math.max(1, imgRect.height);
 
     const cropX = Math.max(0, (this.cropRect.x - imgX) * scaleX);
     const cropY = Math.max(0, (this.cropRect.y - imgY) * scaleY);
-    const cropW = Math.min(naturalWidth - cropX, this.cropRect.w * scaleX);
-    const cropH = Math.min(naturalHeight - cropY, this.cropRect.h * scaleY);
+    const cropW = Math.min(naturalWidth - cropX, Math.max(1, this.cropRect.w * scaleX));
+    const cropH = Math.min(naturalHeight - cropY, Math.max(1, this.cropRect.h * scaleY));
 
+    return {
+      x: Math.round(cropX),
+      y: Math.round(cropY),
+      w: Math.max(1, Math.round(cropW)),
+      h: Math.max(1, Math.round(cropH))
+    };
+  }
+
+  /**
+   * Get cropped canvas coordinates relative to actual natural image resolution
+   */
+  getCroppedCanvas(naturalWidth, naturalHeight) {
+    const rect = this.getCropRect(this.imgElement);
     const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(cropW));
-    canvas.height = Math.max(1, Math.round(cropH));
+    canvas.width = rect.w;
+    canvas.height = rect.h;
 
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(this.imgElement, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(this.imgElement, rect.x, rect.y, rect.w, rect.h, 0, 0, canvas.width, canvas.height);
 
     return canvas;
   }

@@ -1616,56 +1616,67 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply Crop Button
     if (pi7ModalApplyCropBtn) {
       pi7ModalApplyCropBtn.addEventListener('click', async () => {
-        if (!modalCropEngine || !activeImageObj) return;
-        const cropRect = modalCropEngine.getCropRect(activeImageObj);
+        try {
+          if (!modalCropEngine || !activeImageObj) return;
+          const targetImg = pi7CropModalImg || activeImageObj;
+          const cropRect = modalCropEngine.getCropRect(targetImg);
 
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(cropRect.w));
-        canvas.height = Math.max(1, Math.round(cropRect.h));
-        const ctx = canvas.getContext('2d');
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(cropRect.w));
+          canvas.height = Math.max(1, Math.round(cropRect.h));
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
 
-        if (modalCropRotation !== 0) {
-          ctx.translate(canvas.width / 2, canvas.height / 2);
-          ctx.rotate((modalCropRotation * Math.PI) / 180);
-          ctx.drawImage(
-            activeImageObj,
-            cropRect.x, cropRect.y, cropRect.w, cropRect.h,
-            -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height
-          );
-        } else {
-          ctx.drawImage(
-            activeImageObj,
-            cropRect.x, cropRect.y, cropRect.w, cropRect.h,
-            0, 0, canvas.width, canvas.height
-          );
+          if (modalCropRotation !== 0) {
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((modalCropRotation * Math.PI) / 180);
+            ctx.drawImage(
+              activeImageObj,
+              cropRect.x, cropRect.y, cropRect.w, cropRect.h,
+              -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height
+            );
+          } else {
+            ctx.drawImage(
+              activeImageObj,
+              cropRect.x, cropRect.y, cropRect.w, cropRect.h,
+              0, 0, canvas.width, canvas.height
+            );
+          }
+
+          const newBlob = await ImageProcessor.canvasToBlob(canvas, currentOptions.format || 'image/jpeg', 0.95);
+          const newUrl = URL.createObjectURL(newBlob);
+          activeImageObj = await ImageProcessor.loadImage(newUrl);
+
+          if (currentActiveFile) {
+            currentActiveFile.previewUrl = newUrl;
+            currentActiveFile.originalSize = newBlob.size;
+          }
+
+          currentOptions.width = activeImageObj.naturalWidth;
+          currentOptions.height = activeImageObj.naturalHeight;
+          aspectRatioValue = currentOptions.width / currentOptions.height;
+
+          const pi7ThumbnailImg = document.getElementById('pi7ThumbnailImg');
+          if (pi7ThumbnailImg) pi7ThumbnailImg.src = newUrl;
+
+          const pi7CardWidth = document.getElementById('pi7CardWidth');
+          const pi7CardHeight = document.getElementById('pi7CardHeight');
+          const pi7CardSize = document.getElementById('pi7CardSize');
+          if (pi7CardWidth) pi7CardWidth.textContent = `${activeImageObj.naturalWidth} PX`;
+          if (pi7CardHeight) pi7CardHeight.textContent = `${activeImageObj.naturalHeight} PX`;
+          if (pi7CardSize) pi7CardSize.textContent = formatBytes(newBlob.size);
+
+          if (inputWidth) inputWidth.value = activeImageObj.naturalWidth;
+          if (inputHeight) inputHeight.value = activeImageObj.naturalHeight;
+
+          debouncedRender();
+          closeCropModal();
+          showToast(`Image cropped to ${activeImageObj.naturalWidth} x ${activeImageObj.naturalHeight} px!`, 'success');
+        } catch (err) {
+          console.error('Error applying crop:', err);
+          showToast('Failed to apply crop', 'error');
         }
-
-        const newBlob = await ImageProcessor.canvasToBlob(canvas, currentOptions.format || 'image/jpeg', 0.95);
-        const newUrl = URL.createObjectURL(newBlob);
-        activeImageObj = await ImageProcessor.loadImage(newUrl);
-
-        if (currentActiveFile) {
-          currentActiveFile.previewUrl = newUrl;
-          currentActiveFile.originalSize = newBlob.size;
-        }
-
-        currentOptions.width = activeImageObj.naturalWidth;
-        currentOptions.height = activeImageObj.naturalHeight;
-        aspectRatioValue = currentOptions.width / currentOptions.height;
-
-        const pi7ThumbnailImg = document.getElementById('pi7ThumbnailImg');
-        if (pi7ThumbnailImg) pi7ThumbnailImg.src = newUrl;
-
-        const pi7CardWidth = document.getElementById('pi7CardWidth');
-        const pi7CardHeight = document.getElementById('pi7CardHeight');
-        const pi7CardSize = document.getElementById('pi7CardSize');
-        if (pi7CardWidth) pi7CardWidth.textContent = `${activeImageObj.naturalWidth} PX`;
-        if (pi7CardHeight) pi7CardHeight.textContent = `${activeImageObj.naturalHeight} PX`;
-        if (pi7CardSize) pi7CardSize.textContent = formatBytes(newBlob.size);
-
-        debouncedRender();
-        closeCropModal();
-        showToast('Image cropped successfully!', 'success');
       });
     }
 

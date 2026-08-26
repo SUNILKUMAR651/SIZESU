@@ -89,84 +89,142 @@ class ImageProcessor {
   }
 
   /**
-   * Compress image to an EXACT target file size in KB using binary search canvas fitting
+   * Compress image to an EXACT target file size in KB (targeting 97% - 99.5% of target KB)
    */
   static async compressToTargetKb(img, targetKb, format = 'image/jpeg', options = {}) {
     const targetBytes = targetKb * 1024;
-    // Strict requirement: the size MUST NOT exceed targetKb
-    const toleranceBytes = targetBytes;
+    const minDesiredBytes = Math.floor(targetBytes * 0.96); // 96% lower threshold
+    const maxDesiredBytes = Math.floor(targetBytes * 0.995); // 99.5% upper threshold
 
-    let minQuality = 0.02;
-    let maxQuality = 1.0;
+    let currentWidth = options.width || img.naturalWidth || img.width || 512;
+    let currentHeight = options.height || img.naturalHeight || img.height || 512;
+
+    const compressFormat = (format === 'image/png') ? 'image/jpeg' : format;
     let bestBlob = null;
 
-    let currentWidth = options.width || img.naturalWidth || img.width;
-    let currentHeight = options.height || img.naturalHeight || img.height;
-
-    // PNG cannot be quality-compressed — convert to JPEG for target KB
-    const compressFormat = (format === 'image/png') ? 'image/jpeg' : format;
-
-    // Outer loop: scale down dimensions if quality alone cannot reach target
-    for (let scaleAttempt = 0; scaleAttempt < 8; scaleAttempt++) {
+    // Phase 1: Try finding matching quality & dimensions
+    for (let scaleAttempt = 0; scaleAttempt < 10; scaleAttempt++) {
       const scaledCanvas = ImageProcessor.processImage(img, {
         ...options,
         width: Math.round(currentWidth),
         height: Math.round(currentHeight)
       });
 
-      // Reset binary search bounds for each scale attempt
-      minQuality = 0.02;
-      maxQuality = 1.0;
-      let iterBest = null;
+      let minQuality = 0.02;
+      let maxQuality = 1.0;
 
-      // Binary search with 12 iterations for tight precision
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 15; i++) {
         const midQuality = (minQuality + maxQuality) / 2;
         const blob = await ImageProcessor.canvasToBlob(scaledCanvas, compressFormat, midQuality);
 
-        if (blob.size <= toleranceBytes) {
-          iterBest = blob;
-          bestBlob = blob;
-          minQuality = midQuality; // Try higher quality within limit
+        if (blob.size <= targetBytes) {
+          if (!bestBlob || blob.size > bestBlob.size) {
+            bestBlob = blob;
+          }
+          minQuality = midQuality; // Try higher quality
         } else {
           maxQuality = midQuality; // Too large — reduce quality
         }
 
-        // Early exit: if within 95-100% of target, perfect match found
-        if (iterBest && iterBest.size >= targetBytes * 0.95 && iterBest.size <= toleranceBytes) {
+        if (bestBlob && bestBlob.size >= minDesiredBytes && bestBlob.size <= targetBytes) {
           break;
         }
       }
 
-      // Successfully hit target — stop scaling
-      if (bestBlob && bestBlob.size <= toleranceBytes) {
+      if (bestBlob && bestBlob.size >= minDesiredBytes && bestBlob.size <= targetBytes) {
         break;
       }
 
-      // Reduce dimensions by 15% and try again
-      currentWidth *= 0.85;
-      currentHeight *= 0.85;
+      // If at quality 1.0 it's still smaller than target, try upscale resolution
+      if (bestBlob && bestBlob.size < minDesiredBytes && scaleAttempt < 3) {
+        currentWidth *= 1.35;
+        currentHeight *= 1.35;
+        continue;
+      }
+
+      // If too large, scale down
+      if (!bestBlob || bestBlob.size > targetBytes) {
+        currentWidth *= 0.85;
+        currentHeight *= 0.85;
+      } else {
+        break;
+      }
     }
 
     if (!bestBlob) {
-      const finalW = Math.max(Math.round(currentWidth), 50);
-      const finalH = Math.max(Math.round(currentHeight), 50);
       const finalCanvas = ImageProcessor.processImage(img, {
         ...options,
-        width: finalW,
-        height: finalH
+        width: Math.max(Math.round(currentWidth), 50),
+        height: Math.max(Math.round(currentHeight), 50)
       });
-      bestBlob = await ImageProcessor.canvasToBlob(finalCanvas, compressFormat, 0.02);
-      if (bestBlob) {
-        bestBlob.finalWidth = finalW;
-        bestBlob.finalHeight = finalH;
+      bestBlob = await ImageProcessor.canvasToBlob(finalCanvas, compressFormat, 0.05);
+    }
+
+    // Phase 2: If the best rendered blob is still under 97% of target KB (e.g. 40KB when 100KB requested),
+    // inject standard safe JPEG comment padding to reach 98.5% of target KB!
+    if (compressFormat === 'image/jpeg' && bestBlob && bestBlob.size < maxDesiredBytes) {
+      try {
+        bestBlob = await ImageProcessor.padJpegBlob(bestBlob, maxDesiredBytes);
+      } catch (err) {
+        console.warn('JPEG padding skipped:', err);
       }
-    } else {
+    }
+
+    if (bestBlob) {
       bestBlob.finalWidth = Math.round(currentWidth);
       bestBlob.finalHeight = Math.round(currentHeight);
     }
 
     return bestBlob;
+  }
+
+  /**
+   * Inject standard safe JPEG COM markers to reach exact byte targets (ISO/IEC 10918-1 JPEG compliant)
+   */
+  static async padJpegBlob(blob, targetBytes) {
+    if (blob.size >= targetBytes) return blob;
+    const arrayBuffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+
+    // Look for EOI marker (0xFF 0xD9) at the end
+    let eoiPos = bytes.length - 2;
+    if (bytes[eoiPos] !== 0xFF || bytes[eoiPos + 1] !== 0xD9) {
+      for (let i = bytes.length - 2; i >= 0; i--) {
+        if (bytes[i] === 0xFF && bytes[i + 1] === 0xD9) {
+          eoiPos = i;
+          break;
+        }
+      }
+    }
+
+    const needed = targetBytes - bytes.length;
+    if (needed < 4 || eoiPos <= 0) return blob;
+
+    // Create COM chunks (0xFF 0xFE length payload)
+    const chunks = [];
+    let remaining = needed;
+    while (remaining >= 4) {
+      const payloadSize = Math.min(remaining - 4, 65530);
+      const chunkLen = payloadSize + 2;
+      const marker = new Uint8Array([0xFF, 0xFE, (chunkLen >> 8) & 0xFF, chunkLen & 0xFF]);
+      const payload = new Uint8Array(payloadSize);
+      payload.fill(0x20); // space fill
+      chunks.push(marker, payload);
+      remaining -= (4 + payloadSize);
+    }
+
+    const totalChunkBytes = chunks.reduce((acc, c) => acc + c.length, 0);
+    const finalBytes = new Uint8Array(bytes.length + totalChunkBytes);
+    finalBytes.set(bytes.subarray(0, eoiPos), 0);
+
+    let offset = eoiPos;
+    for (const chunk of chunks) {
+      finalBytes.set(chunk, offset);
+      offset += chunk.length;
+    }
+    finalBytes.set(bytes.subarray(eoiPos), offset);
+
+    return new Blob([finalBytes], { type: blob.type || 'image/jpeg' });
   }
 
   /**
