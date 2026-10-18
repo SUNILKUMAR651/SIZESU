@@ -60,7 +60,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // AI, PDF, QR Controls
   const aiRemoveBgBtn = document.getElementById('aiRemoveBgBtn');
+  const aiResetOriginalBtn = document.getElementById('aiResetOriginalBtn');
   const aiBgColorSelect = document.getElementById('aiBgColorSelect');
+  const aiCustomColorInput = document.getElementById('aiCustomColorInput');
+  const aiToleranceRange = document.getElementById('aiToleranceRange');
+  const aiToleranceValue = document.getElementById('aiToleranceValue');
+  const aiFeatherRange = document.getElementById('aiFeatherRange');
+  const aiFeatherValue = document.getElementById('aiFeatherValue');
+  const aiSmartSettings = document.getElementById('aiSmartSettings');
+  const aiModeDescription = document.getElementById('aiModeDescription');
+  const aiProgressBox = document.getElementById('aiProgressBox');
+  const aiProgressStatusText = document.getElementById('aiProgressStatusText');
+  const aiProgressPercent = document.getElementById('aiProgressPercent');
+  const aiProgressBar = document.getElementById('aiProgressBar');
+  let originalImageBackup = null;
   const generatePdfBtn = document.getElementById('generatePdfBtn');
   const pdfPageSizeSelect = document.getElementById('pdfPageSizeSelect');
   const pdfOrientationSelect = document.getElementById('pdfOrientationSelect');
@@ -656,33 +669,153 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // AI Background Removal Trigger
+    // --- AI Background Removal Engine Controller ---
+    // 1. Engine mode pills (Smart Magic Wand vs Deep Neural AI)
+    document.querySelectorAll('#aiEnginePills .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#aiEnginePills .pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mode = btn.dataset.aimode;
+        if (mode === 'smart') {
+          if (aiSmartSettings) aiSmartSettings.style.display = 'block';
+          if (aiModeDescription) {
+            aiModeDescription.innerHTML = '⚡ <strong>Smart Magic Wand:</strong> Eliminates outer background in &lt;100ms. 100% preserves eyes, teeth, clothes, &amp; inside artwork.';
+          }
+        } else {
+          if (aiSmartSettings) aiSmartSettings.style.display = 'none';
+          if (aiModeDescription) {
+            aiModeDescription.innerHTML = '🧠 <strong>Deep Neural AI:</strong> Deep learning salient object detection (RMBG-1.4). Best for real-world photos, human portraits &amp; scenery.';
+          }
+        }
+      });
+    });
+
+    // 2. Tolerance & Feather Sliders
+    if (aiToleranceRange && aiToleranceValue) {
+      aiToleranceRange.addEventListener('input', () => {
+        aiToleranceValue.textContent = aiToleranceRange.value;
+      });
+    }
+    if (aiFeatherRange && aiFeatherValue) {
+      aiFeatherRange.addEventListener('input', () => {
+        aiFeatherValue.textContent = `${aiFeatherRange.value}px`;
+      });
+    }
+
+    // 3. Background Color Replacement Selector & Custom Color Picker
+    if (aiBgColorSelect) {
+      aiBgColorSelect.addEventListener('change', () => {
+        if (aiBgColorSelect.value === 'custom') {
+          if (aiCustomColorInput) aiCustomColorInput.style.display = 'block';
+        } else {
+          if (aiCustomColorInput) aiCustomColorInput.style.display = 'none';
+        }
+      });
+    }
+
+    // 4. Reset Original Image Button
+    if (aiResetOriginalBtn) {
+      aiResetOriginalBtn.addEventListener('click', () => {
+        if (!originalImageBackup) return;
+        activeImageObj = originalImageBackup;
+        if (previewImg) previewImg.src = originalImageBackup.src;
+        if (currentActiveFile) {
+          currentActiveFile.processedBlob = null;
+          currentActiveFile.processedSize = currentActiveFile.originalSize;
+        }
+        if (newSizeBadge) newSizeBadge.textContent = formatBytes(currentActiveFile ? currentActiveFile.originalSize : 0);
+        aiResetOriginalBtn.disabled = true;
+        showToast('Restored original uploaded image', 'info');
+      });
+    }
+
+    // 5. Trigger Background Removal Action
     if (aiRemoveBgBtn) {
-      aiRemoveBgBtn.addEventListener('click', () => {
+      aiRemoveBgBtn.addEventListener('click', async () => {
         if (!activeImageObj) {
           showToast('Please upload an image first!', 'error');
           return;
         }
-        showToast('Processing AI Background Removal...', 'info');
-        const replaceColor = aiBgColorSelect && aiBgColorSelect.value === 'transparent' ? null : (aiBgColorSelect ? aiBgColorSelect.value : null);
-        const cleanedCanvas = AIEngine.removeBackground(activeImageObj, { replaceColor });
 
-        cleanedCanvas.toBlob(blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          if (previewImg) previewImg.src = blobUrl;
+        // Save original backup if not yet saved
+        if (!originalImageBackup) {
+          originalImageBackup = activeImageObj;
+        }
 
-          // Update active working image object to the background-removed canvas image
-          ImageProcessor.loadImage(blobUrl).then(newImg => {
-            activeImageObj = newImg;
+        const activePill = document.querySelector('#aiEnginePills .pill-btn.active');
+        const mode = activePill ? activePill.dataset.aimode : 'smart';
+        const tolerance = aiToleranceRange ? parseInt(aiToleranceRange.value, 10) : 35;
+        const feather = aiFeatherRange ? parseInt(aiFeatherRange.value, 10) : 2;
+
+        let replaceColor = null;
+        if (aiBgColorSelect) {
+          if (aiBgColorSelect.value === 'custom') {
+            replaceColor = aiCustomColorInput ? aiCustomColorInput.value : '#ffffff';
+          } else if (aiBgColorSelect.value !== 'transparent') {
+            replaceColor = aiBgColorSelect.value;
+          }
+        }
+
+        // Show progress box & update button state
+        aiRemoveBgBtn.disabled = true;
+        aiRemoveBgBtn.style.opacity = '0.75';
+        if (aiProgressBox) {
+          aiProgressBox.style.display = 'block';
+          if (aiProgressBar) aiProgressBar.style.width = '10%';
+          if (aiProgressPercent) aiProgressPercent.textContent = '10%';
+          if (aiProgressStatusText) aiProgressStatusText.textContent = 'Initializing background removal...';
+        }
+
+        try {
+          const onProgress = (stage, pct, message) => {
+            if (aiProgressBar) aiProgressBar.style.width = `${pct}%`;
+            if (aiProgressPercent) aiProgressPercent.textContent = `${pct}%`;
+            if (aiProgressStatusText) aiProgressStatusText.textContent = message;
+          };
+
+          const cleanedCanvas = await AIEngine.removeBackground(activeImageObj, {
+            mode,
+            tolerance,
+            feather,
+            replaceColor,
+            onProgress
           });
 
-          if (currentActiveFile) {
-            currentActiveFile.processedBlob = blob;
-            currentActiveFile.processedSize = blob.size;
-          }
-          if (newSizeBadge) newSizeBadge.textContent = formatBytes(blob.size);
-          showToast('Background removed successfully! Click Download to save.', 'success');
-        }, replaceColor ? 'image/jpeg' : 'image/png', 0.95);
+          cleanedCanvas.toBlob(blob => {
+            if (!blob) {
+              showToast('Could not generate processed image.', 'error');
+              return;
+            }
+            const blobUrl = URL.createObjectURL(blob);
+            if (previewImg) previewImg.src = blobUrl;
+
+            // Update active working image object to the background-removed canvas image
+            ImageProcessor.loadImage(blobUrl).then(newImg => {
+              activeImageObj = newImg;
+            });
+
+            if (currentActiveFile) {
+              currentActiveFile.processedBlob = blob;
+              currentActiveFile.processedSize = blob.size;
+            }
+            if (newSizeBadge) newSizeBadge.textContent = formatBytes(blob.size);
+            if (aiResetOriginalBtn) aiResetOriginalBtn.disabled = false;
+
+            setTimeout(() => {
+              if (aiProgressBox) aiProgressBox.style.display = 'none';
+            }, 1200);
+
+            showToast('Background removed successfully! Click Download to save.', 'success');
+          }, replaceColor ? 'image/jpeg' : 'image/png', 0.95);
+
+        } catch (err) {
+          console.error('AI Background Removal Error:', err);
+          showToast('Failed to remove background: ' + (err.message || 'Unknown error'), 'error');
+          if (aiProgressBox) aiProgressBox.style.display = 'none';
+        } finally {
+          aiRemoveBgBtn.disabled = false;
+          aiRemoveBgBtn.style.opacity = '1';
+        }
       });
     }
 
@@ -1308,6 +1441,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currentActiveFile = item;
     try {
       activeImageObj = await ImageProcessor.loadImage(item.previewUrl);
+      originalImageBackup = activeImageObj;
+      if (aiResetOriginalBtn) aiResetOriginalBtn.disabled = true;
       currentOptions.width = activeImageObj.naturalWidth;
       currentOptions.height = activeImageObj.naturalHeight;
       aspectRatioValue = currentOptions.width / currentOptions.height;

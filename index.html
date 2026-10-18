@@ -437,16 +437,74 @@
 
         <!-- Panel: AI Background Remover -->
         <div class="tool-panel" id="panel_ai" style="display: none;">
-          <h3 class="panel-title">AI Background Removal</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h3 class="panel-title" style="margin: 0;">AI Background Removal</h3>
+            <span class="badge-item" style="font-size: 0.7rem; background: rgba(99,102,241,0.15); color: var(--primary); border: 1px solid rgba(99,102,241,0.3); padding: 0.15rem 0.5rem; border-radius: 9999px;">100% Client-Side Privacy</span>
+          </div>
+
+          <!-- Engine Mode Selector Pills -->
+          <div class="panel-group">
+            <label class="panel-label">Removal Engine</label>
+            <div class="preset-pills" id="aiEnginePills" style="margin-bottom: 0.5rem;">
+              <button type="button" class="pill-btn active" data-aimode="smart" title="Instant Connected Flood Fill - Zero Download, perfectly preserves eyes & interior details">⚡ Smart Magic Wand (Instant)</button>
+              <button type="button" class="pill-btn" data-aimode="ai" title="Deep Neural AI Model (RMBG-1.4) - Ideal for complex real-world photos & scenery">🧠 Deep Neural AI (Remove.bg)</button>
+            </div>
+            <div id="aiModeDescription" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-top: 0.25rem;">
+              ⚡ <strong>Smart Magic Wand:</strong> Eliminates outer background in &lt;100ms. 100% preserves eyes, teeth, clothes, &amp; inside artwork.
+            </div>
+          </div>
+
+          <!-- Tolerance & Feathering Settings (Visible for Smart mode) -->
+          <div id="aiSmartSettings" class="panel-group" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label class="panel-label" style="margin: 0; font-size: 0.8rem;">Color Tolerance</label>
+              <span id="aiToleranceValue" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">35</span>
+            </div>
+            <input type="range" id="aiToleranceRange" min="10" max="80" value="35" step="1" style="width: 100%; accent-color: var(--primary); cursor: pointer; margin-bottom: 0.75rem;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label class="panel-label" style="margin: 0; font-size: 0.8rem;">Edge Smoothing</label>
+              <span id="aiFeatherValue" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">2px</span>
+            </div>
+            <input type="range" id="aiFeatherRange" min="0" max="5" value="2" step="1" style="width: 100%; accent-color: var(--primary); cursor: pointer;">
+          </div>
+
+          <!-- New Background Replacement Color -->
           <div class="panel-group">
             <label class="panel-label">New Background</label>
-            <select id="aiBgColorSelect" class="input-control select-control">
-              <option value="transparent">Transparent PNG</option>
-              <option value="#ffffff">Solid White</option>
-              <option value="#2563eb">Passport Blue</option>
-            </select>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <select id="aiBgColorSelect" class="input-control select-control" style="flex: 1;">
+                <option value="transparent">Transparent PNG</option>
+                <option value="#ffffff">Solid White (Passport)</option>
+                <option value="#2563eb">Passport Blue (Visa/ID)</option>
+                <option value="#f1f5f9">Studio Light Gray</option>
+                <option value="custom">Custom Color Palette...</option>
+              </select>
+              <input type="color" id="aiCustomColorInput" value="#10b981" style="display: none; width: 42px; height: 38px; padding: 2px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer;" title="Pick Custom Background Color">
+            </div>
           </div>
-          <button class="btn btn-primary" id="aiRemoveBgBtn" style="width:100%;">Remove Background Now</button>
+
+          <!-- Progress Bar & Status Display -->
+          <div id="aiProgressBox" style="display: none; margin-bottom: 1rem; background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.25); border-radius: var(--radius-sm); padding: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.4rem;">
+              <span id="aiProgressStatusText" style="font-weight: 600; color: var(--text-main);">Processing...</span>
+              <span id="aiProgressPercent" style="font-weight: 700; color: var(--primary);">0%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 9999px; overflow: hidden;">
+              <div id="aiProgressBar" style="width: 0%; height: 100%; background: var(--grad-primary); transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" id="aiRemoveBgBtn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/></svg>
+              <span>Remove Background</span>
+            </button>
+            <button class="btn btn-secondary" id="aiResetOriginalBtn" title="Reset to original uploaded image" style="padding: 0 0.85rem;" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+          </div>
         </div>
 
         <!-- Panel: PDF Tools Suite -->
@@ -1136,13 +1194,13 @@
   <script src="imageProcessor.js?v=9"></script>
   <script src="cropEngine.js?v=9"></script>
   <script src="batchEngine.js?v=9"></script>
-  <script src="aiEngine.js?v=9"></script>
+  <script src="aiEngine.js?v=10"></script>
   <script src="pdfEngine.js?v=9"></script>
   <script src="qrcode.min.js?v=9"></script>
   <script src="qrEngine.js?v=9"></script>
   <script src="seoData.js?v=9"></script>
   <script src="seoRouter.js?v=9"></script>
   <script src="blogEngine.js?v=9"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
