@@ -1774,10 +1774,8 @@ body {
 .adsense-skyscraper-left { width: 160px; min-height: 250px; }
 .adsense-skyscraper-right { width: 100%; min-height: 250px; }
 
-/* Hide empty or unfilled ad containers to prevent ugly blank boxes */
-ins.adsbygoogle[data-ad-status="unfilled"],
-ins.adsbygoogle:empty,
-.ad-container:empty {
+/* Hide unfilled AdSense ads gracefully to prevent blank boxes */
+ins.adsbygoogle[data-ad-status="unfilled"] {
   display: none !important;
 }
 

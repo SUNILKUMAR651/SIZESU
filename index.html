@@ -187,7 +187,7 @@
       <div class="ad-label" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); opacity: 0.75;">Advertisement</div>
       
       <!-- Top Responsive Google AdSense Banner -->
-      <div class="ad-container top-ad-container" style="width: 100%; max-width: 970px; min-height: 90px; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 0.5rem 0;">
+      <div class="ad-container top-ad-container" style="width: 100%; max-width: 970px; min-height: 90px; display: block; text-align: center; overflow: hidden; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); padding: 0.5rem 0;">
         <ins class="adsbygoogle"
              style="display:block; min-width: 300px; width: 100%;"
              data-ad-client="ca-pub-7012138429520024"
@@ -202,12 +202,13 @@
       <!-- HighPerformanceFormat Top 728x90 Banner -->
       <div class="ad-container top-ad-iframe" style="width: 100%; display: flex; justify-content: center; overflow: hidden;">
         <script type="text/javascript">
-          window.atOptions = window.atOptions || {};
-          window.atOptions['key'] = 'ee0f26f23ec8a46c1f5ec9356e82868b';
-          window.atOptions['format'] = 'iframe';
-          window.atOptions['height'] = 90;
-          window.atOptions['width'] = 728;
-          window.atOptions['params'] = {};
+          atOptions = {
+            'key' : 'ee0f26f23ec8a46c1f5ec9356e82868b',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
         </script>
         <script type="text/javascript" src="https://www.highperformanceformat.com/ee0f26f23ec8a46c1f5ec9356e82868b/invoke.js"></script>
       </div>
@@ -896,34 +897,36 @@
       <!-- Top Leaderboard Banner -->
       <div class="ad-container" style="width: 100%; display: flex; justify-content: center; overflow: hidden;">
         <script type="text/javascript">
-          window.atOptions = window.atOptions || {};
-          window.atOptions['key'] = 'ee0f26f23ec8a46c1f5ec9356e82868b';
-          window.atOptions['format'] = 'iframe';
-          window.atOptions['height'] = 90;
-          window.atOptions['width'] = 728;
-          window.atOptions['params'] = {};
+          atOptions = {
+            'key' : 'ee0f26f23ec8a46c1f5ec9356e82868b',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
         </script>
         <script type="text/javascript" src="https://www.highperformanceformat.com/ee0f26f23ec8a46c1f5ec9356e82868b/invoke.js"></script>
       </div>
       
-      <div class="ad-flex-row" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; width: 100%;">
+      <div class="ad-flex-row" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 1.5rem; width: 100%;">
         <!-- Left Skyscraper Banner -->
-        <div class="ad-container" style="overflow: hidden;">
+        <div class="ad-container" style="overflow: hidden; width: 160px; min-height: 600px; flex-shrink: 0;">
           <script type="text/javascript">
-            window.atOptions = window.atOptions || {};
-            window.atOptions['key'] = 'ef364d5c48b122c1c2a2ace13b9cfc77';
-            window.atOptions['format'] = 'iframe';
-            window.atOptions['height'] = 600;
-            window.atOptions['width'] = 160;
-            window.atOptions['params'] = {};
+            atOptions = {
+              'key' : 'ef364d5c48b122c1c2a2ace13b9cfc77',
+              'format' : 'iframe',
+              'height' : 600,
+              'width' : 160,
+              'params' : {}
+            };
           </script>
           <script type="text/javascript" src="https://www.highperformanceformat.com/ef364d5c48b122c1c2a2ace13b9cfc77/invoke.js"></script>
         </div>
 
         <!-- Right AdSense Banner -->
-        <div class="ad-container" style="overflow: hidden; max-width: 100%;">
+        <div class="ad-container" style="overflow: hidden; width: 336px; max-width: 100%; min-height: 280px; flex: 1 1 300px; display: block; text-align: center;">
           <ins class="adsbygoogle"
-               style="display:block; min-width: 300px;"
+               style="display:block; min-width: 300px; width: 100%;"
                data-ad-client="ca-pub-7012138429520024"
                data-ad-slot="9509963089"
                data-ad-format="auto"
@@ -936,9 +939,9 @@
     </section>
 
     <!-- AdSense Autorelaxed -->
-    <div class="adsense-wrapper" style="margin: 1.5rem 0; width: 100%;">
+    <div class="adsense-wrapper" style="margin: 1.5rem auto; width: 100%; max-width: 1200px; min-height: 100px;">
       <ins class="adsbygoogle"
-           style="display:block"
+           style="display:block; width: 100%;"
            data-ad-format="autorelaxed"
            data-ad-client="ca-pub-7012138429520024"
            data-ad-slot="4168220657"></ins>
